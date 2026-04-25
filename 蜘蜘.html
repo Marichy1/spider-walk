@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>蜘蜘 - 带你随便逛逛</title>
+    <style>
+        :root {
+            --pure-white: #FFFFFF;
+            --pure-black: #000000;
+            --gray-95: #F2F2F2;
+            --gray-85: #D9D9D9;
+            --gray-65: #A6A6A6;
+            --font-mono: "Courier New", Courier, "Liberation Mono", "Consolas", "Noto Sans Mono", monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 100vw; height: 100vh; overflow: hidden;
+            font-family: var(--font-mono);
+            background-color: var(--gray-95);
+            user-select: none; -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        #top-bar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 42px;
+            background-color: var(--pure-white);
+            display: flex; align-items: center; padding: 0 20px; z-index: 100;
+            border-bottom: 2px solid var(--pure-black);
+        }
+        #top-bar .title { font-size: 26px; font-weight: bold; color: var(--pure-black); margin-right: 14px; }
+        #top-bar .subtitle { font-size: 16px; color: var(--pure-black); opacity: 0.8; }
+        #layer-container {
+            position: absolute; top: 42px; left: 0; right: 0; bottom: 0; overflow: hidden;
+        }
+        #bg-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--gray-95); }
+        #line-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+
+        .tag {
+            position: absolute; padding: 6px 14px; background-color: var(--pure-white);
+            border: 2px solid var(--gray-65); border-radius: 6px; color: var(--pure-black);
+            font-family: var(--font-mono); font-size: 16px; line-height: 20px;
+            white-space: nowrap; cursor: pointer;
+            z-index: 5;
+            will-change: left, top;
+            animation: tag-pop-in 0.3s ease-out;
+            touch-action: none;
+        }
+        @keyframes tag-pop-in {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        #spider-btn-area {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        #spider-canvas { pointer-events: none; }
+        #random-btn {
+            pointer-events: auto; cursor: pointer; background-color: var(--pure-black);
+            color: var(--pure-white); border: 2px solid var(--pure-black);
+            font-family: var(--font-mono); font-size: 16px; padding: 8px 24px;
+            border-radius: 6px; transition: background-color 0.2s;
+        }
+        #random-btn:hover { background-color: #333; }
+
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 200;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #overlay.active { opacity: 1; pointer-events: auto; }
+
+        #popup {
+            position: absolute;
+            width: 90%; max-width: 480px;
+            background-color: var(--gray-95);
+            border: 2px solid var(--pure-black);
+            display: flex; flex-direction: column;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+            font-family: var(--font-mono); color: var(--pure-black);
+            z-index: 201;
+            transform: scale(0); opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+            transform-origin: center center;
+        }
+        #popup.active { transform: scale(1); opacity: 1; }
+
+        .popup-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 6px 12px; border-bottom: 1px solid var(--pure-black);
+            background-color: var(--pure-white); position: relative;
+            touch-action: none;
+        }
+        .popup-header .title-text { flex: 1; font-weight: bold; font-size: 18px; pointer-events: none; }
+        .close-btn {
+            width: 30px; height: 30px; background-color: var(--pure-black);
+            color: var(--pure-white); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border: 1px solid var(--pure-black); font-size: 18px;
+            pointer-events: auto;
+        }
+
+        .popup-name {
+            padding: 8px 14px 4px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: var(--gray-95);
+            border-bottom: 1px dashed var(--gray-65);
+        }
+
+        .popup-body { display: flex; padding: 14px; gap: 14px; pointer-events: auto; flex-wrap: wrap; }
+        .popup-left { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 12px; }
+        .popup-desc { font-size: 15px; line-height: 1.4; min-height: 50px; }
+        .go-btn {
+            align-self: flex-start; background-color: var(--pure-black);
+            color: var(--pure-white); border: 2px solid var(--pure-black);
+            font-family: var(--font-mono); font-size: 16px; padding: 8px 24px;
+            border-radius: 4px; cursor: pointer;
+        }
+        .popup-right { width: 150px; max-width: 100%; }
+        .popup-image {
+            width: 150px; height: 150px; background-color: var(--gray-85);
+            border: 1px solid var(--pure-black); object-fit: contain;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; color: var(--gray-65);
+            max-width: 100%;
+        }
+        .popup-tags { font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px; }
+        .popup-tags span {
+            background: var(--pure-white); border: 1px solid var(--gray-65);
+            border-radius: 4px; padding: 2px 8px; font-size: 13px;
+        }
+
+        #popup-spider-wrap {
+            position: absolute; left: -5px; bottom: 100%;
+            width: 90px; height: 60px; z-index: 202;
+            pointer-events: none;
+            background: transparent !important;
+        }
+        #popup-spider-canvas {
+            width: 90px; height: 60px;
+            pointer-events: auto;
+            background: transparent !important;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div id="top-bar">
+    <span class="title">蜘蜘</span>
+    <span class="subtitle">带你随便逛逛</span>
+</div>
+
+<div id="layer-container">
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="line-canvas"></canvas>
+    <div id="spider-btn-area">
+        <canvas id="spider-canvas" width="240" height="200"></canvas>
+        <button id="random-btn">随机漫游</button>
+    </div>
+</div>
+
+<div id="overlay"></div>
+<div id="popup">
+    <div class="popup-header" id="popup-header">
+        <span class="title-text">蜘蜘带你到这里</span>
+        <div class="close-btn" id="close-popup">✕</div>
+    </div>
+    <div class="popup-name" id="popup-name"></div>
+    <div class="popup-body">
+        <div class="popup-left">
+            <div class="popup-desc" id="popup-desc"></div>
+            <button class="go-btn" id="go-btn">出发</button>
+        </div>
+        <div class="popup-right">
+            <img class="popup-image" id="popup-img" src="" alt="目的地图片">
+            <div class="popup-tags" id="popup-tags"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const TAG_POOL = ['#音乐','#博客','#游戏','#书籍','#独立电影'];
+    const PAGES = [
+        { name:'落网', desc:'独立音乐推荐平台，小众而精致。', img:'auto', url:'https://www.luoo.net/', tags:['#音乐'] },
+        { name:'看见音乐', desc:'为独立音乐人服务的社区。', img:'auto', url:'https://www.kanjian.com/', tags:['#音乐','#设计'] },
+        { name:'阮一峰的网络日志', desc:'科技与人文的深度思考。', img:'auto', url:'https://www.ruanyifeng.com/blog/', tags:['#博客'] },
+        { name:'利器', desc:'采访不同人士使用的工具。', img:'auto', url:'https://liqi.io/', tags:['#博客'] },
+        { name:'IndieNova', desc:'独立游戏交流与发现平台。', img:'auto', url:'https://indienova.com/', tags:['#游戏'] },
+        { name:'itch.io', desc:'海量创意独立游戏。', img:'auto', url:'https://itch.io/', tags:['#游戏'] },
+        { name:'好书友', desc:'分享小众优质书籍。', img:'auto', url:'https://www.haoshuyou.com/', tags:['#书籍'] },
+        { name:'书格', desc:'线上古籍图书馆。', img:'auto', url:'https://new.shuge.org/', tags:['#书籍'] },
+        { name:'V电影', desc:'高品质短片分享平台。', img:'auto', url:'https://www.vmovier.com/', tags:['#独立电影'] }
+    ];
+
+    const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+    const layerContainer = document.getElementById('layer-container');
+    const bgCanvas = document.getElementById('bg-canvas');
+    const lineCanvas = document.getElementById('line-canvas');
+    const spiderCanvas = document.getElementById('spider-canvas');
+    const randomBtn = document.getElementById('random-btn');
+    const overlay = document.getElementById('overlay');
+    const popup = document.getElementById('popup');
+    const popupHeader = document.getElementById('popup-header');
+    const closePopupBtn = document.getElementById('close-popup');
+    const popupName = document.getElementById('popup-name');
+    const popupDesc = document.getElementById('popup-desc');
+    const popupImg = document.getElementById('popup-img');
+    const popupTags = document.getElementById('popup-tags');
+    const goBtn = document.getElementById('go-btn');
+
+    const bgCtx = bgCanvas.getContext('2d'), lineCtx = lineCanvas.getContext('2d'), spiderCtx = spiderCanvas.getContext('2d');
+
+    let tags = [];
+    let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2;
+    let frozenMouseX = mouseX, frozenMouseY = mouseY;
+    let overlayVisible = false;
+    let currentRecommendData = null, currentRecommendTagType = null;
+    let spiderPupilScale = 1, spiderClickAnim = null;
+    let draggingTag = null, dragOffsetX = 0, dragOffsetY = 0;
+    let dragStartX = 0, dragStartY = 0, dragMoved = false;
+    let isDraggingPopup = false;
+    let popupDragStartX = 0, popupDragStartY = 0;
+    let popupStartLeft = 0, popupStartTop = 0;
+
+    const SPIDER_BODY = { x:120, y:120, r:30, seg1:10, seg2:20, bend:1.5 };
+    const EYE_RADII = [5,8,8,5], EYE_CX = [5,18,34,47], EYE_TOTAL_W = 52;
+    let popupSpiderCanvas, popupSpiderCtx;
+    const POPUP_SPIDER = { br:16, seg1:10*16/30, seg2:20*16/30, bend:1.5 };
+    let targetVirtualX = SPIDER_BODY.x, targetVirtualY = SPIDER_BODY.y;
+    let virtualMX = targetVirtualX, virtualMY = targetVirtualY;
+    let lastTargetSwitchTime = 0, switchInterval = 3000;
+    const DRAG_THRESHOLD = isMobile ? 10 : 3;
+
+    function randomSpeed() {
+        const speed = 30 + Math.random() * 30, angle = Math.random() * 2 * Math.PI;
+        return { vx: speed * Math.cos(angle), vy: speed * Math.sin(angle) };
+    }
+
+    // 生成含自定义文字的占位图
+    function getPlaceholderImg(text) {
+        const safeText = text || '?';
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+            <rect width="150" height="150" fill="#D9D9D9"/>
+            <text x="75" y="85" font-size="18" font-family="sans-serif" fill="#666" text-anchor="middle">${safeText}</text>
+        </svg>`;
+        return 'data:image/svg+xml,' + encodeURIComponent(svg);
+    }
+
+    // 根据 item 获取目标 favicon 地址
+    function resolveFaviconUrl(item) {
+        try {
+            const origin = new URL(item.url).origin;
+            return origin + '/favicon.ico';
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // 加载图片并设置到弹窗，包含加载提示和失败回退
+    function loadPopupImage(item) {
+        // 立即显示“寻找图片中…”
+        popupImg.src = getPlaceholderImg('寻找图片中…');
+
+        if (item.img !== 'auto') {
+            // 非 auto 模式直接使用原图或 placeholder
+            popupImg.src = item.img === 'placeholder' ? getPlaceholderImg(item.tags?.[0] || '?') : item.img;
+            return;
+        }
+
+        const faviconUrl = resolveFaviconUrl(item);
+        if (!faviconUrl) {
+            popupImg.src = getPlaceholderImg('图片被吃掉啦！');
+            return;
+        }
+
+        const testImg = new Image();
+        let settled = false;
+        const fail = () => {
+            if (settled) return;
+            settled = true;
+            popupImg.src = getPlaceholderImg('图片被吃掉啦！');
+        };
+        const success = () => {
+            if (settled) return;
+            settled = true;
+            popupImg.src = faviconUrl;
+        };
+
+        testImg.onload = success;
+        testImg.onerror = fail;
+        testImg.src = faviconUrl;
+
+        // 超时保护
+        setTimeout(() => {
+            if (!settled) {
+                fail();
+            }
+        }, 2000);
+    }
+
+    function resizeBgCanvas() {
+        const rect = layerContainer.getBoundingClientRect();
+        bgCanvas.width = rect.width; bgCanvas.height = rect.height;
+        lineCanvas.width = rect.width; lineCanvas.height = rect.height;
+        drawGrid();
+    }
+    function drawGrid() {
+        bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+        bgCtx.fillStyle='#F2F2F2'; bgCtx.fillRect(0,0,bgCanvas.width,bgCanvas.height);
+        bgCtx.fillStyle='#D9D9D9';
+        for (let x=20; x<bgCanvas.width; x+=20)
+            for (let y=20; y<bgCanvas.height; y+=20)
+                bgCtx.fillRect(x-1,y-1,2,2);
+    }
+
+    function createTagElement(type) {
+        const el = document.createElement('div');
+        el.className = 'tag'; el.textContent = type; el.dataset.type = type;
+        layerContainer.appendChild(el);
+        el.addEventListener('pointerdown', onTagPointerDown);
+        el.addEventListener('contextmenu', e => e.preventDefault());
+        el.addEventListener('animationend', () => { el.style.animation = 'none'; }, { once: true });
+        return el;
+    }
+
+    function addTag(type, startX, startY, vx, vy) {
+        const rect = layerContainer.getBoundingClientRect();
+        const el = createTagElement(type);
+        el.style.visibility = 'hidden';
+        const tagWidth = el.offsetWidth, tagHeight = el.offsetHeight;
+        el.style.visibility = 'visible';
+        let x = startX !== undefined ? startX : Math.random() * (rect.width - tagWidth);
+        let y = startY !== undefined ? startY : Math.random() * (rect.height - tagHeight);
+        if (vx === undefined || vy === undefined) {
+            const speed = randomSpeed();
+            vx = speed.vx; vy = speed.vy;
+        }
+        const tagData = { el, x, y, vx, vy, type, tagWidth, tagHeight };
+        tags.push(tagData);
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+    }
+
+    function isMouseOverTag(tagEl) {
+        const rect = tagEl.getBoundingClientRect();
+        return mouseX >= rect.left && mouseX <= rect.right &&
+               mouseY >= rect.top && mouseY <= rect.bottom;
+    }
+    function updateTagHoverStates() {
+        if (isMobile || overlayVisible || draggingTag) return;
+        for (let tag of tags) {
+            tag.el.dataset.hovered = isMouseOverTag(tag.el) ? 'true' : 'false';
+        }
+    }
+    function isPointInSpiderBody(clientX, clientY) {
+        const rect = spiderCanvas.getBoundingClientRect();
+        return Math.hypot(clientX - rect.left - SPIDER_BODY.x, clientY - rect.top - SPIDER_BODY.y) <= SPIDER_BODY.r;
+    }
+
+    function onTagPointerDown(e) {
+        if (isPointInSpiderBody(e.clientX, e.clientY)) return;
+        if (overlayVisible) return;
+        e.preventDefault(); e.stopPropagation();
+        const tagEl = e.currentTarget;
+        const tag = tags.find(t => t.el === tagEl);
+        if (!tag) return;
+        tagEl.dataset.hovered = 'true';
+        draggingTag = tag;
+        dragOffsetX = e.clientX - tagEl.getBoundingClientRect().left;
+        dragOffsetY = e.clientY - tagEl.getBoundingClientRect().top;
+        dragStartX = e.clientX; dragStartY = e.clientY;
+        dragMoved = false;
+        tagEl.style.zIndex = '99';
+    }
+
+    document.addEventListener('pointermove', (e) => {
+        if (isDraggingPopup) {
+            const dx = e.clientX - popupDragStartX, dy = e.clientY - popupDragStartY;
+            let newLeft = popupStartLeft + dx, newTop = popupStartTop + dy;
+            const pw = popup.offsetWidth, ph = popup.offsetHeight;
+            const ww = window.innerWidth, wh = window.innerHeight;
+            newLeft = Math.min(Math.max(newLeft, 0), ww - pw);
+            newTop = Math.min(Math.max(newTop, 0), wh - ph);
+            popup.style.left = newLeft + 'px';
+            popup.style.top = newTop + 'px';
+            return;
+        }
+        if (!draggingTag) return;
+        e.preventDefault();
+        const containerRect = layerContainer.getBoundingClientRect();
+        draggingTag.x = e.clientX - containerRect.left - dragOffsetX;
+        draggingTag.y = e.clientY - containerRect.top - dragOffsetY;
+        draggingTag.el.style.left = draggingTag.x + 'px';
+        draggingTag.el.style.top = draggingTag.y + 'px';
+        if (Math.abs(e.clientX - dragStartX) > DRAG_THRESHOLD || Math.abs(e.clientY - dragStartY) > DRAG_THRESHOLD) dragMoved = true;
+    });
+
+    document.addEventListener('pointerup', (e) => {
+        if (isDraggingPopup) {
+            isDraggingPopup = false;
+            popupHeader.style.cursor = '';
+            return;
+        }
+        if (!draggingTag) return;
+        const tag = draggingTag;
+        tag.el.style.zIndex = '5';
+        if (!dragMoved) {
+            e.preventDefault();
+            const containerRect = layerContainer.getBoundingClientRect();
+            recommendRandom(tag.type, e.clientX - containerRect.left, e.clientY - containerRect.top);
+        } else {
+            const speed = randomSpeed();
+            tag.vx = speed.vx; tag.vy = speed.vy;
+        }
+        if (isMobile) tag.el.dataset.hovered = 'false';
+        else tag.el.dataset.hovered = isMouseOverTag(tag.el) ? 'true' : 'false';
+        draggingTag = null;
+    });
+
+    popupHeader.addEventListener('pointerdown', (e) => {
+        if (e.target === closePopupBtn) return;
+        if (!overlayVisible) return;
+        isDraggingPopup = true;
+        const rect = popup.getBoundingClientRect();
+        popupDragStartX = e.clientX; popupDragStartY = e.clientY;
+        popupStartLeft = rect.left; popupStartTop = rect.top;
+        popupHeader.setPointerCapture(e.pointerId);
+        popupHeader.style.cursor = 'move';
+        e.preventDefault();
+    });
+
+    document.addEventListener('pointerup', (e) => {
+        if (draggingTag || isDraggingPopup) return;
+        if (overlayVisible) return;
+        if (isPointInSpiderBody(e.clientX, e.clientY)) {
+            e.preventDefault(); e.stopPropagation();
+            handleSpiderClick(e.clientX, e.clientY);
+        }
+    });
+
+    function handleSpiderClick(clientX, clientY) {
+        if (spiderClickAnim) cancelAnimationFrame(spiderClickAnim.raf);
+        let sc = 1;
+        const expand = () => {
+            sc += 0.15;
+            if (sc >= 1.8) { requestAnimationFrame(shrink); return; }
+            spiderPupilScale = sc; drawMainSpider(); requestAnimationFrame(expand);
+        };
+        const shrink = () => {
+            sc -= 0.1;
+            if (sc <= 1) { spiderPupilScale = 1; drawMainSpider(); spiderClickAnim = null; return; }
+            spiderPupilScale = sc; drawMainSpider(); requestAnimationFrame(shrink);
+        };
+        spiderClickAnim = { raf: requestAnimationFrame(expand) };
+        const containerRect = layerContainer.getBoundingClientRect();
+        const randomTag = TAG_POOL[Math.floor(Math.random() * TAG_POOL.length)];
+        addTag(randomTag, clientX - containerRect.left, clientY - containerRect.top);
+    }
+
+    function pickNewTarget() {
+        if (!isMobile) return;
+        if (draggingTag) {
+            const rect = draggingTag.el.getBoundingClientRect(), cr = spiderCanvas.getBoundingClientRect();
+            targetVirtualX = rect.left + rect.width/2 - cr.left;
+            targetVirtualY = rect.top + rect.height/2 - cr.top;
+        } else if (tags.length > 0) {
+            const tag = tags[Math.floor(Math.random() * tags.length)];
+            const rect = tag.el.getBoundingClientRect(), cr = spiderCanvas.getBoundingClientRect();
+            targetVirtualX = rect.left + rect.width/2 - cr.left;
+            targetVirtualY = rect.top + rect.height/2 - cr.top;
+        } else {
+            const btnRect = randomBtn.getBoundingClientRect(), cr = spiderCanvas.getBoundingClientRect();
+            targetVirtualX = btnRect.left + btnRect.width/2 - cr.left;
+            targetVirtualY = btnRect.top + btnRect.height/2 - cr.top;
+        }
+    }
+
+    function updateVirtualGaze(now) {
+        if (!isMobile) return;
+        if (now - lastTargetSwitchTime > switchInterval) {
+            pickNewTarget();
+            lastTargetSwitchTime = now;
+            switchInterval = 3000 + Math.random() * 2000;
+        }
+        if (draggingTag) pickNewTarget();
+        virtualMX += (targetVirtualX - virtualMX) * 0.1;
+        virtualMY += (targetVirtualY - virtualMY) * 0.1;
+    }
+
+    function drawLines() {
+        lineCtx.clearRect(0,0,lineCanvas.width,lineCanvas.height);
+        lineCtx.strokeStyle='#D9D9D9'; lineCtx.lineWidth=1.5;
+        for (let i=0;i<tags.length;i++) for (let j=i+1;j<tags.length;j++){
+            const a=tags[i], b=tags[j];
+            const ax=a.x+a.tagWidth/2, ay=a.y+a.tagHeight/2, bx=b.x+b.tagWidth/2, by=b.y+b.tagHeight/2;
+            if (Math.hypot(bx-ax,by-ay)<130) {
+                lineCtx.beginPath(); lineCtx.moveTo(ax,ay); lineCtx.lineTo(bx,by); lineCtx.stroke();
+            }
+        }
+    }
+
+    function updateTags(deltaTime) {
+        if (overlayVisible) return;
+        const rect = layerContainer.getBoundingClientRect();
+        for (let tag of tags) {
+            if (tag.el.dataset.hovered === 'true' || draggingTag === tag) continue;
+            tag.x += tag.vx * deltaTime; tag.y += tag.vy * deltaTime;
+            tag.tagWidth = tag.el.offsetWidth; tag.tagHeight = tag.el.offsetHeight;
+            if (tag.x <= 0) { tag.x = 0; tag.vx *= -1; }
+            if (tag.y <= 0) { tag.y = 0; tag.vy *= -1; }
+            if (tag.x + tag.tagWidth >= rect.width) { tag.x = rect.width - tag.tagWidth; tag.vx *= -1; }
+            if (tag.y + tag.tagHeight >= rect.height) { tag.y = rect.height - tag.tagHeight; tag.vy *= -1; }
+            tag.el.style.left = tag.x + 'px'; tag.el.style.top = tag.y + 'px';
+        }
+    }
+
+    function drawSpider(ctx, w, h, bx, by, br, seg1, seg2, bend, mx, my, pupilScale) {
+        const legAngs = [];
+        for (let i=0;i<4;i++) legAngs.push(120+(240-120)*(i/3));
+        const allAngs = [...legAngs, ...legAngs.map(d=>180-d)];
+        ctx.strokeStyle='#000'; ctx.lineWidth=(br/30)*3.5; ctx.lineCap='round';
+        for (let deg of allAngs) {
+            const rad = deg*Math.PI/180;
+            const sx = bx+(br+1)*Math.cos(rad), sy = by+(br+1)*Math.sin(rad);
+            const jx = sx+seg1*Math.cos(rad), jy = sy+seg1*Math.sin(rad);
+            const bendRad = Math.cos(rad)<0 ? -bend : bend;
+            ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(jx,jy);
+            ctx.lineTo(jx+seg2*Math.cos(rad+bendRad), jy+seg2*Math.sin(rad+bendRad));
+            ctx.stroke();
+        }
+        ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2); ctx.fill();
+        const scale = br/30, eyeR = EYE_RADII.map(r=>r*scale);
+        const eyeCx = EYE_CX.map(cx=> (cx-EYE_TOTAL_W/2)*scale+bx);
+        for (let i=0;i<4;i++) drawEye(ctx, eyeCx[i], by, eyeR[i], mx, my, pupilScale);
+    }
+    function drawEye(ctx, x, y, r, mx, my, scale) {
+        ctx.fillStyle='#FFF'; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle='#000'; ctx.lineWidth=0.8; ctx.stroke();
+        const maxDist=r*0.4, angle=Math.atan2(my-y,mx-x), dist=Math.min(maxDist,Math.hypot(mx-x,my-y)*0.25);
+        ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(x+Math.cos(angle)*dist, y+Math.sin(angle)*dist, r*0.4*scale, 0, Math.PI*2); ctx.fill();
+    }
+
+    function drawMainSpider() {
+        const rect = spiderCanvas.getBoundingClientRect();
+        spiderCtx.clearRect(0,0,spiderCanvas.width,spiderCanvas.height);
+        let tx, ty;
+        if (overlayVisible) { tx = frozenMouseX; ty = frozenMouseY; }
+        else if (isMobile) { tx = virtualMX; ty = virtualMY; }
+        else { tx = mouseX - rect.left; ty = mouseY - rect.top; }
+        drawSpider(spiderCtx, spiderCanvas.width, spiderCanvas.height, SPIDER_BODY.x, SPIDER_BODY.y, SPIDER_BODY.r, SPIDER_BODY.seg1, SPIDER_BODY.seg2, SPIDER_BODY.bend, tx, ty, spiderPupilScale);
+    }
+
+    function createPopupSpider() {
+        const wrapper = document.createElement('div');
+        wrapper.id = 'popup-spider-wrap';
+        const canvas = document.createElement('canvas');
+        canvas.id = 'popup-spider-canvas'; canvas.width = 90; canvas.height = 60;
+        wrapper.appendChild(canvas);
+        popupHeader.appendChild(wrapper);
+        popupSpiderCanvas = canvas; popupSpiderCtx = canvas.getContext('2d', { alpha: true });
+        canvas.addEventListener('pointermove', (e) => {
+            if (!overlayVisible) return;
+            const rect = canvas.getBoundingClientRect();
+            drawPopupSpider(e.clientX - rect.left, e.clientY - rect.top);
+        });
+    }
+    function drawPopupSpider(mx, my) {
+        if (!popupSpiderCtx) return;
+        const w=90, h=60;
+        popupSpiderCtx.clearRect(0,0,w,h);
+        const br = POPUP_SPIDER.br, bx=w/2, by=h - br*0.5;
+        if (isMobile) { mx = bx; my = by + 50; }
+        drawSpider(popupSpiderCtx, w, h, bx, by, br, POPUP_SPIDER.seg1, POPUP_SPIDER.seg2, POPUP_SPIDER.bend, mx, my, 1);
+    }
+
+    function recommendRandom(tagType, clickX, clickY) {
+        let candidates = PAGES.filter(p => p.tags.includes(tagType));
+        if (candidates.length === 0) candidates = PAGES;
+        const item = candidates[Math.floor(Math.random() * candidates.length)];
+        currentRecommendData = item;
+        currentRecommendTagType = tagType;
+        overlayVisible = true;
+        frozenMouseX = mouseX; frozenMouseY = mouseY;
+        overlay.classList.add('active');
+        popup.classList.add('active');
+        positionPopup(clickX, clickY);
+        popupName.textContent = item.name;
+        popupDesc.textContent = item.desc;
+
+        // 启动图片加载流程
+        loadPopupImage(item);
+
+        popupTags.innerHTML = '';
+        item.tags.forEach(t => {
+            const span = document.createElement('span'); span.textContent = t;
+            popupTags.appendChild(span);
+        });
+        goBtn.onclick = () => { window.open(item.url, '_blank'); };
+        if (!popupSpiderCanvas) createPopupSpider();
+        const wrapper = document.getElementById('popup-spider-wrap');
+        if (wrapper) wrapper.style.display = 'block';
+        const cRect = popupSpiderCanvas.getBoundingClientRect();
+        drawPopupSpider(mouseX - cRect.left, mouseY - cRect.top);
+    }
+
+    function positionPopup(cx, cy) {
+        const pw=popup.offsetWidth, ph=popup.offsetHeight, ww=window.innerWidth, wh=window.innerHeight;
+        let left=cx-pw/2, top=cy-ph/2;
+        left = Math.min(Math.max(left,0), ww-pw);
+        top = Math.min(Math.max(top,0), wh-ph);
+        popup.style.left = left + 'px'; popup.style.top = top + 'px';
+    }
+
+    function closePopup() {
+        overlayVisible = false;
+        overlay.classList.remove('active');
+        popup.classList.remove('active');
+        const wrapper = document.getElementById('popup-spider-wrap');
+        if (wrapper) wrapper.style.display = 'none';
+        if (currentRecommendTagType) addTag(currentRecommendTagType);
+        currentRecommendData = null; currentRecommendTagType = null;
+    }
+
+    closePopupBtn.addEventListener('click', closePopup);
+    overlay.addEventListener('pointerup', (e) => { if (e.target === overlay) closePopup(); });
+    randomBtn.addEventListener('click', (e) => {
+        if (overlayVisible) return;
+        const rect = layerContainer.getBoundingClientRect();
+        const randomTag = TAG_POOL[Math.floor(Math.random() * TAG_POOL.length)];
+        recommendRandom(randomTag, e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (isMobile) return;
+        mouseX = e.clientX; mouseY = e.clientY;
+        drawMainSpider();
+        const rect = spiderCanvas.getBoundingClientRect();
+        const overBody = !overlayVisible && Math.hypot(mouseX-rect.left-SPIDER_BODY.x, mouseY-rect.top-SPIDER_BODY.y) <= SPIDER_BODY.r;
+        spiderCanvas.style.pointerEvents = overBody ? 'auto' : 'none';
+        spiderCanvas.style.cursor = overBody ? 'pointer' : 'default';
+        spiderCanvas.title = overBody ? '点我试试～' : '';
+        if (overlayVisible && popupSpiderCanvas) drawPopupSpider(mouseX - popupSpiderCanvas.getBoundingClientRect().left, mouseY - popupSpiderCanvas.getBoundingClientRect().top);
+    });
+
+    let lastTime = performance.now();
+    function gameLoop(now) {
+        const delta = Math.min(0.05, (now - lastTime) / 1000); lastTime = now;
+        updateTagHoverStates();
+        if (isMobile) updateVirtualGaze(now);
+        if (!overlayVisible) updateTags(delta);
+        drawLines(); drawMainSpider();
+        requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener('resize', () => {
+        resizeBgCanvas();
+        const rect = layerContainer.getBoundingClientRect();
+        tags.forEach(tag => {
+            if (tag.x + tag.tagWidth > rect.width) tag.x = rect.width - tag.tagWidth;
+            if (tag.y + tag.tagHeight > rect.height) tag.y = rect.height - tag.tagHeight;
+            tag.el.style.left = tag.x + 'px'; tag.el.style.top = tag.y + 'px';
+        });
+    });
+
+    resizeBgCanvas();
+    if (isMobile) { pickNewTarget(); virtualMX = targetVirtualX; virtualMY = targetVirtualY; }
+    drawMainSpider();
+    requestAnimationFrame(gameLoop);
+})();
+</script>
+</body>
+</html>
