@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>蜘蜘数据编辑器</title>
+    <title>蜘蜘数据编辑器（增强版）</title>
     <style>
         :root {
             --bg: #f2f2f2;
@@ -51,7 +51,7 @@
             border-radius: 6px;
             padding: 14px;
         }
-        .left-panel { width: 260px; }
+        .left-panel { width: 280px; }
         .right-panel { flex: 1; }
 
         h2 { margin: 0 0 12px 0; font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
@@ -66,6 +66,14 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+        }
+        .tag-badge .count {
+            background: #ddd;
+            color: #333;
+            border-radius: 8px;
+            padding: 0 6px;
+            font-size: 11px;
+            margin-left: 2px;
         }
         .tag-badge button {
             background: none;
@@ -84,6 +92,13 @@
             border: 1px solid var(--border);
             border-radius: 4px;
         }
+
+        .stats {
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #555;
+        }
+        .stats span { font-weight: bold; }
 
         .page-card {
             background: var(--card);
@@ -171,17 +186,18 @@
 
     <div class="file-zone">
         <input type="file" id="fileInput" accept=".html">
-        <p>上传 zhizhi.html 开始编辑</p>
+        <p>上传 zhizhu.html 开始编辑</p>
     </div>
 
     <div class="toolbar">
-        <button id="addPageBtn">添加页面</button>
+        <button id="addPageBtn">添加页面（置于顶部）</button>
         <button id="downloadBtn">下载更新后的 html</button>
     </div>
 
     <div class="layout">
         <div class="panel left-panel">
             <h2>标签池</h2>
+            <div class="stats" id="statsArea"></div>
             <div id="tagPoolList" class="tag-list"></div>
             <div style="margin-top:12px; display:flex; gap:6px;">
                 <input type="text" class="new-tag-input" id="newGlobalTagInput" placeholder="新标签">
@@ -200,6 +216,44 @@
     let TAG_POOL = [];
     let PAGES = [];
     let originalHTML = '';
+
+    // 计算每个标签的页面数量，并按数量降序返回
+    function getTagCounts() {
+        const counts = {};
+        TAG_POOL.forEach(tag => { counts[tag] = 0; });
+        PAGES.forEach(page => {
+            page.tags.forEach(tag => {
+                if (counts[tag] !== undefined) counts[tag]++;
+            });
+        });
+        // 转换为数组并排序
+        return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    }
+
+    // 更新统计信息和标签列表
+    function renderStatsAndTags() {
+        const statsDiv = document.getElementById('statsArea');
+        statsDiv.innerHTML = `页面总数：<span>${PAGES.length}</span>`;
+
+        const tagCounts = getTagCounts();
+        const list = document.getElementById('tagPoolList');
+        list.innerHTML = tagCounts.map(([tag, count]) => `
+            <span class="tag-badge">
+                ${esc(tag)} <span class="count">${count}</span>
+                <button data-tag="${esc(tag)}">×</button>
+            </span>
+        `).join('');
+        list.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tag = btn.dataset.tag;
+                if (confirm(`删除标签 "${tag}" 吗？将从所有页面中移除。`)) {
+                    TAG_POOL = TAG_POOL.filter(t => t !== tag);
+                    PAGES.forEach(p => p.tags = p.tags.filter(t => t !== tag));
+                    renderAll();
+                }
+            });
+        });
+    }
 
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -242,26 +296,8 @@
     }
 
     function renderAll() {
-        renderTagPool();
+        renderStatsAndTags();
         renderPages();
-    }
-
-    function renderTagPool() {
-        const list = document.getElementById('tagPoolList');
-        list.innerHTML = TAG_POOL.map(tag =>
-            `<span class="tag-badge">${esc(tag)} <button data-tag="${esc(tag)}">×</button></span>`
-        ).join('');
-        list.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tag = btn.dataset.tag;
-                if (confirm(`删除标签 "${tag}" 吗？`)) {
-                    TAG_POOL = TAG_POOL.filter(t => t !== tag);
-                    PAGES.forEach(p => p.tags = p.tags.filter(t => t !== tag));
-                    renderTagPool();
-                    renderPages();
-                }
-            });
-        });
     }
 
     document.getElementById('addGlobalTagBtn').addEventListener('click', () => {
@@ -271,8 +307,7 @@
         if (!val.startsWith('#')) val = '#' + val;
         if (TAG_POOL.includes(val)) { alert('标签已存在'); return; }
         TAG_POOL.push(val);
-        renderTagPool();
-        renderPages();
+        renderAll();
         input.value = '';
     });
 
@@ -309,7 +344,7 @@
             card.querySelector('.delete-page-btn').addEventListener('click', () => {
                 if (confirm('删除此页面？')) {
                     PAGES.splice(idx, 1);
-                    renderPages();
+                    renderAll();
                 }
             });
 
@@ -336,11 +371,12 @@
                     if (!val.startsWith('#')) val = '#' + val;
                     if (!TAG_POOL.includes(val)) {
                         TAG_POOL.push(val);
-                        renderTagPool();
+                        renderStatsAndTags();
                     }
                     if (!page.tags.includes(val)) {
                         page.tags.push(val);
                         renderTagCheckboxes(selectorDiv, idx, page);
+                        renderStatsAndTags(); // 更新数量显示
                     }
                     newTagInput.value = '';
                 }
@@ -361,6 +397,7 @@
                 } else {
                     page.tags = page.tags.filter(t => t !== tag);
                 }
+                renderStatsAndTags(); // 更新左侧统计
             });
             label.appendChild(cb);
             label.appendChild(document.createTextNode(tag));
@@ -370,11 +407,11 @@
 
     document.getElementById('addPageBtn').addEventListener('click', () => {
         PAGES.unshift({ name: '', desc: '', img: 'auto', url: '', tags: [] });
-        renderPages();
+        renderAll();
     });
 
     document.getElementById('downloadBtn').addEventListener('click', () => {
-        if (!originalHTML) { alert('请先上传 zhizhi.html 文件'); return; }
+        if (!originalHTML) { alert('请先上传 zhizhu.html 文件'); return; }
         let newHTML = originalHTML;
         newHTML = newHTML.replace(/const TAG_POOL = \[.*?\];/, `const TAG_POOL = ${JSON.stringify(TAG_POOL)};`);
         newHTML = newHTML.replace(/const PAGES = \[[\s\S]*?\];/, `const PAGES = ${JSON.stringify(PAGES, null, 4)};`);
@@ -382,7 +419,7 @@
         const blob = new Blob([newHTML], { type: 'text/html' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'zhizhi_updated.html';
+        a.download = 'zhizhu_updated.html';
         a.click();
     });
 
