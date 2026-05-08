@@ -195,8 +195,200 @@
 
 <script>
 (function() {
-    const TAG_POOL = ["#不安","#书籍","#博客","#古早","#哲思","#影视","#情绪","#故事","#教程","#欢乐","#游戏","#社区","#神秘","#科技","#艺术","#谜题","#资源","#音乐","#高能预警","#个人站"];
+    const TAG_POOL = ["#不安","#个人站","#书籍","#博客","#古早","#哲思","#媒体","#情绪","#技术","#故事","#教程","#欢乐","#游戏","#社区","#神秘","#科学","#艺术","#谜题","#资源","#高能预警","#？"];
     const PAGES = [
+    {
+        "name": "我有个桶",
+        "desc": "对，我有个桶。",
+        "img": "auto",
+        "url": "https://ihasabucket.com/",
+        "tags": [
+            "#？",
+            "#欢乐"
+        ]
+    },
+    {
+        "name": "大型强子对撞机毁灭世界了吗？",
+        "desc": "笑点解析：没有。",
+        "img": "auto",
+        "url": "https://hasthelargehadroncolliderdestroyedtheworldyet.com/",
+        "tags": [
+            "#神秘",
+            "#？"
+        ]
+    },
+    {
+        "name": "chrismckenzie",
+        "desc": "似乎是个人主页？",
+        "img": "auto",
+        "url": "https://chrismckenzie.com/",
+        "tags": [
+            "#？",
+            "#个人站"
+        ]
+    },
+    {
+        "name": "缓存的蒙娜丽莎",
+        "desc": "神秘音效播放器？",
+        "img": "auto",
+        "url": "https://cachemonet.com/",
+        "tags": [
+            "#神秘",
+            "#媒体"
+        ]
+    },
+    {
+        "name": "猫小跳",
+        "desc": "可爱捏",
+        "img": "auto",
+        "url": "https://cat-bounce.com/",
+        "tags": [
+            "#欢乐"
+        ]
+    },
+    {
+        "name": "随机颜色",
+        "desc": "字面意思而已啦",
+        "img": "auto",
+        "url": "https://randomcolour.com/",
+        "tags": [
+            "#？"
+        ]
+    },
+    {
+        "name": "r33b",
+        "desc": "？",
+        "img": "auto",
+        "url": "https://r33b.net/",
+        "tags": [
+            "#神秘",
+            "#？"
+        ]
+    },
+    {
+        "name": "速食鸵鸟",
+        "desc": "只是一只鸵鸟而已啦",
+        "img": "auto",
+        "url": "https://instantostrich.com/",
+        "tags": [
+            "#神秘",
+            "#欢乐",
+            "#？"
+        ]
+    },
+    {
+        "name": "爷爷没穿衣服",
+        "desc": "？",
+        "img": "auto",
+        "url": "https://grandpanoclothes.com/",
+        "tags": [
+            "#神秘",
+            "#高能预警",
+            "#？"
+        ]
+    },
+    {
+        "name": "红绿蓝",
+        "desc": "点击按钮可以改变页面颜色，如果一直闪烁的话……",
+        "img": "auto",
+        "url": "https://www.rrrgggbbb.com/",
+        "tags": [
+            "#神秘",
+            "#欢乐",
+            "#？"
+        ]
+    },
+    {
+        "name": "move now think later",
+        "desc": "一盘自己在下的国际跳棋。",
+        "img": "auto",
+        "url": "https://www.movenowthinklater.com/",
+        "tags": [
+            "#？"
+        ]
+    },
+    {
+        "name": "坠落之间",
+        "desc": "视觉和音效的循环叠加，毫无意义却让人着迷的小实验。",
+        "img": "auto",
+        "url": "https://www.fallingfalling.com/",
+        "tags": [
+            "#艺术",
+            "#媒体"
+        ]
+    },
+    {
+        "name": "Bury Me With My Money",
+        "desc": "复古街机风格——页面只显示“bury me with my money”，怀旧又荒诞。",
+        "img": "auto",
+        "url": "https://burymewithmymoney.com/",
+        "tags": [
+            "#欢乐",
+            "#神秘",
+            "#？"
+        ]
+    },
+    {
+        "name": "The finger, deal with it.",
+        "desc": "鼠标悬停就会收到一个“竖中指”的页面——极简设计，满满恶趣味。(手机似乎无法正常查看)",
+        "img": "auto",
+        "url": "https://thatsthefinger.com/",
+        "tags": [
+            "#欢乐",
+            "#？"
+        ]
+    },
+    {
+        "name": "HOOOOO!",
+        "desc": "一个不断闪烁“HEEEEEEEY!”的网页——没什么实用性，却让人忍不住一直盯着看。",
+        "img": "auto",
+        "url": "https://heeeeeeeey.com/",
+        "tags": [
+            "#欢乐",
+            "#？"
+        ]
+    },
+    {
+        "name": "WindowSwap",
+        "desc": "随机“打开”世界各地陌生人的窗景短视频，把多样的风景和温暖的氛围带回家。",
+        "img": "auto",
+        "url": "https://www.window-swap.com/",
+        "tags": [
+            "#资源",
+            "#艺术"
+        ]
+    },
+    {
+        "name": "Project Gutenberg",
+        "desc": "一个志愿者运营的公版数字图书馆，提供 75,000+ 免费电子书，无需注册就能随时阅读或下载。",
+        "img": "auto",
+        "url": "https://www.gutenberg.org/",
+        "tags": [
+            "#书籍",
+            "#资源"
+        ]
+    },
+    {
+        "name": "光标花园",
+        "desc": "Ben Moren 的互动小实验——用光标“种植”表情花园，充满童趣和创意的小游戏。",
+        "img": "auto",
+        "url": "https://drawing.garden/",
+        "tags": [
+            "#游戏",
+            "#艺术",
+            "#欢乐"
+        ]
+    },
+    {
+        "name": "只是鱼",
+        "desc": "“这里没有复杂的代码，真的只是一条鱼。”",
+        "img": "auto",
+        "url": "https://justafish.org/",
+        "tags": [
+            "#欢乐",
+            "#？"
+        ]
+    },
     {
         "name": "銀河電燈",
         "desc": "银河电灯的个人网站，用ai辅助制作了很多优质的网页解谜游戏。",
@@ -227,8 +419,8 @@
         "url": "https://heitaosan.com/",
         "tags": [
             "#博客",
-            "#科技",
-            "#个人站"
+            "#个人站",
+            "#技术"
         ]
     },
     {
@@ -249,7 +441,7 @@
         "url": "http://www.labix.net/",
         "tags": [
             "#艺术",
-            "#音乐",
+            "#媒体",
             "#博客",
             "#古早",
             "#个人站"
@@ -285,8 +477,8 @@
         "img": "auto",
         "url": "https://manytinythings.github.io/",
         "tags": [
-            "#科技",
-            "#游戏"
+            "#游戏",
+            "#科学"
         ]
     },
     {
@@ -513,7 +705,7 @@
         "tags": [
             "#古早",
             "#欢乐",
-            "#影视"
+            "#媒体"
         ]
     },
     {
@@ -533,7 +725,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1k4miB4E6k/?vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#影视",
+            "#媒体",
             "#不安"
         ]
     },
@@ -557,7 +749,7 @@
             "#艺术",
             "#故事",
             "#哲思",
-            "#影视",
+            "#媒体",
             "#欢乐"
         ]
     },
@@ -567,7 +759,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1rTMJzZE45/?spm_id_from=333.1387.favlist.content.click&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#音乐",
+            "#媒体",
             "#高能预警",
             "#艺术",
             "#不安",
@@ -592,7 +784,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1xZ4y1G7cw?spm_id_from=333.788.recommend_more_video.1&trackid=web_related_0.router-related-2479604-ptszh.1777175601596.74&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#音乐",
+            "#媒体",
             "#艺术",
             "#高能预警",
             "#古早"
@@ -604,7 +796,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1hs41167FE/?spm_id_from=333.1387.favlist.content.click&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#音乐",
+            "#媒体",
             "#艺术",
             "#高能预警",
             "#不安",
@@ -629,7 +821,7 @@
         "tags": [
             "#博客",
             "#古早",
-            "#科技"
+            "#科学"
         ]
     },
     {
@@ -638,7 +830,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1SzTKzvEXi/?spm_id_from=333.1387.favlist.content.click&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#音乐",
+            "#媒体",
             "#高能预警",
             "#艺术",
             "#神秘",
@@ -652,8 +844,7 @@
         "url": "http://www.zxtech.com/",
         "tags": [
             "#神秘",
-            "#古早",
-            "#科技"
+            "#古早"
         ]
     },
     {
@@ -729,7 +920,7 @@
         "tags": [
             "#艺术",
             "#神秘",
-            "#影视",
+            "#媒体",
             "#故事",
             "#欢乐"
         ]
@@ -751,7 +942,7 @@
         "url": "https://baike.baidu.com/item/%E4%BC%81%E9%B9%85%E5%85%AC%E8%B7%AF/22664507",
         "tags": [
             "#故事",
-            "#影视",
+            "#媒体",
             "#书籍"
         ]
     },
@@ -838,7 +1029,7 @@
         "img": "auto",
         "url": "https://music-theory.aizcutei.com/",
         "tags": [
-            "#音乐",
+            "#媒体",
             "#教程"
         ]
     },
@@ -849,7 +1040,7 @@
         "url": "https://www.bilibili.com/video/BV1u34y1Q7FL?spm_id_from=333.788.recommend_more_video.0&trackid=web_related_0.router-related-2479604-ptszh.1777168564656.300&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
             "#情绪",
-            "#音乐",
+            "#媒体",
             "#艺术"
         ]
     },
@@ -869,7 +1060,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1ERMJzdEMH?spm_id_from=333.788.recommend_more_video.1&trackid=web_related_0.router-related-2479604-5tzfh.1777168158974.63&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#音乐",
+            "#媒体",
             "#艺术"
         ]
     },
@@ -879,7 +1070,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1NmZABcEBU/?spm_id_from=333.788.recommend_more_video.4&trackid=web_related_0.router-related-2479604-ptszh.1777167987167.900&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#音乐",
+            "#媒体",
             "#艺术"
         ]
     },
@@ -921,7 +1112,9 @@
         "url": "https://www.ruanyifeng.com/blog/",
         "tags": [
             "#博客",
-            "#哲思"
+            "#哲思",
+            "#科学",
+            "#技术"
         ]
     },
     {
@@ -990,8 +1183,8 @@
         "url": "http://enet.com.cn",
         "tags": [
             "#古早",
-            "#科技",
-            "#教程"
+            "#教程",
+            "#技术"
         ]
     },
     {
@@ -1001,8 +1194,8 @@
         "url": "https://www.flashget.com/cn/index.html",
         "tags": [
             "#古早",
-            "#科技",
-            "#资源"
+            "#资源",
+            "#技术"
         ]
     },
     {
@@ -1023,8 +1216,8 @@
         "url": "https://music.91q.com/",
         "tags": [
             "#古早",
-            "#音乐",
-            "#科技"
+            "#媒体",
+            "#技术"
         ]
     },
     {
@@ -1079,8 +1272,8 @@
         "url": "http://slsknet.org",
         "tags": [
             "#古早",
-            "#音乐",
-            "#科技"
+            "#媒体",
+            "#技术"
         ]
     },
     {
@@ -1146,8 +1339,7 @@
         "tags": [
             "#社区",
             "#书籍",
-            "#影视",
-            "#音乐",
+            "#媒体",
             "#艺术"
         ]
     },
@@ -1168,8 +1360,8 @@
         "img": "auto",
         "url": "https://www.meteorshowers.org/",
         "tags": [
-            "#科技",
-            "#资源"
+            "#资源",
+            "#科学"
         ]
     },
     {
@@ -1189,8 +1381,8 @@
         "img": "auto",
         "url": "http://www.unforgettable.dk/",
         "tags": [
-            "#科技",
-            "#神秘"
+            "#神秘",
+            "#技术"
         ]
     },
     {
@@ -1232,8 +1424,9 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV17foLB7EuF?spm_id_from=333.788.recommend_more_video.0&trackid=web_related_0.router-related-2479604-s7xkd.1777622663879.612&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#科技",
-            "#资源"
+            "#故事",
+            "#哲思",
+            "#情绪"
         ]
     },
     {
@@ -1262,9 +1455,9 @@
         "img": "auto",
         "url": "https://scaleofuniverse.com/",
         "tags": [
-            "#科技",
             "#艺术",
-            "#哲思"
+            "#哲思",
+            "#科学"
         ]
     },
     {
@@ -1333,8 +1526,7 @@
         "img": "auto",
         "url": "https://24hoursofhappy.com/",
         "tags": [
-            "#音乐",
-            "#影视"
+            "#媒体"
         ]
     },
     {
@@ -1484,8 +1676,8 @@
         "url": "https://michaelbach.de/ot/",
         "tags": [
             "#艺术",
-            "#科技",
-            "#神秘"
+            "#神秘",
+            "#科学"
         ]
     },
     {
@@ -1538,6 +1730,7 @@
     let virtualMX = targetVirtualX, virtualMY = targetVirtualY;
     let lastTargetSwitchTime = 0, switchInterval = 3000;
     const DRAG_THRESHOLD = isMobile ? 10 : 3;
+    let gazeTargetTag = null;      // 移动端视线锁定的元素
 
     // 最近推荐历史（最多5条）
     let recentRecommendations = [];
@@ -1758,32 +1951,47 @@
         addTag(randomTag, clientX - containerRect.left, clientY - containerRect.top);
     }
 
+    function updateTargetFromGaze() {
+        if (!gazeTargetTag || !document.body.contains(gazeTargetTag)) {
+            const btnRect = randomBtn.getBoundingClientRect();
+            const cr = spiderCanvas.getBoundingClientRect();
+            targetVirtualX = btnRect.left + btnRect.width/2 - cr.left;
+            targetVirtualY = btnRect.top + btnRect.height/2 - cr.top;
+            gazeTargetTag = null;
+            return;
+        }
+        const rect = gazeTargetTag.getBoundingClientRect();
+        const cr = spiderCanvas.getBoundingClientRect();
+        targetVirtualX = rect.left + rect.width/2 - cr.left;
+        targetVirtualY = rect.top + rect.height/2 - cr.top;
+    }
+
     function pickNewTarget() {
         if (!isMobile) return;
         if (draggingTag) {
-            const rect = draggingTag.el.getBoundingClientRect(), cr = spiderCanvas.getBoundingClientRect();
-            targetVirtualX = rect.left + rect.width/2 - cr.left;
-            targetVirtualY = rect.top + rect.height/2 - cr.top;
+            gazeTargetTag = draggingTag.el;
         } else if (tags.length > 0) {
-            const tag = tags[Math.floor(Math.random() * tags.length)];
-            const rect = tag.el.getBoundingClientRect(), cr = spiderCanvas.getBoundingClientRect();
-            targetVirtualX = rect.left + rect.width/2 - cr.left;
-            targetVirtualY = rect.top + rect.height/2 - cr.top;
+            gazeTargetTag = tags[Math.floor(Math.random() * tags.length)].el;
         } else {
-            const btnRect = randomBtn.getBoundingClientRect(), cr = spiderCanvas.getBoundingClientRect();
-            targetVirtualX = btnRect.left + btnRect.width/2 - cr.left;
-            targetVirtualY = btnRect.top + btnRect.height/2 - cr.top;
+            gazeTargetTag = null;
         }
+        updateTargetFromGaze();
     }
 
     function updateVirtualGaze(now) {
         if (!isMobile) return;
+        // 拖拽时强制锁定被拖拽标签
+        if (draggingTag) {
+            gazeTargetTag = draggingTag.el;
+        }
         if (now - lastTargetSwitchTime > switchInterval) {
             pickNewTarget();
             lastTargetSwitchTime = now;
             switchInterval = 3000 + Math.random() * 2000;
         }
-        if (draggingTag) pickNewTarget();
+        // 每帧刷新目标坐标
+        updateTargetFromGaze();
+        // 平滑移动
         virtualMX += (targetVirtualX - virtualMX) * 0.1;
         virtualMY += (targetVirtualY - virtualMY) * 0.1;
     }
@@ -1875,21 +2083,18 @@
     }
 
     function recommendRandom(tagType, clickX, clickY) {
-        let candidates = PAGES.filter(p => p.tags.includes(tagType) && p.name !== ''); // 过滤掉空页面
+        let candidates = PAGES.filter(p => p.tags.includes(tagType) && p.name !== '');
         if (candidates.length === 0) candidates = PAGES.filter(p => p.name !== '');
 
-        // 过滤最近5次推荐过的页面
         let filtered = candidates.filter(p => !recentRecommendations.some(r => r.name === p.name && r.url === p.url));
         if (filtered.length === 0) {
-            // 若同标签下全部被排除，则从全局（所有页面）再尝试过滤
             filtered = PAGES.filter(p => p.name !== '' && !recentRecommendations.some(r => r.name === p.name && r.url === p.url));
             if (filtered.length === 0) {
-                filtered = candidates; // 最后保底
+                filtered = candidates;
             }
         }
 
         const item = filtered[Math.floor(Math.random() * filtered.length)];
-        // 更新历史记录
         recentRecommendations.unshift(item);
         if (recentRecommendations.length > 5) recentRecommendations.pop();
 
@@ -1915,7 +2120,6 @@
         const cRect = popupSpiderCanvas.getBoundingClientRect();
         drawPopupSpider(mouseX - cRect.left, mouseY - cRect.top);
 
-        // --- 标签寿命管理：每次推荐增加计数，移除过期标签 ---
         const toRemove = [];
         for (let tag of tags) {
             tag.recCount = (tag.recCount || 0) + 1;
