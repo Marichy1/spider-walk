@@ -195,46 +195,180 @@
 
 <script>
 (function() {
-    const TAG_POOL = ["#不安","#个人站","#书籍","#博客","#古早","#哲思","#媒体","#情绪","#技术","#故事","#教程","#欢乐","#游戏","#社区","#神秘","#科学","#艺术","#谜题","#资源","#高能预警","#？"];
+    const TAG_POOL = ["#不安","#个人站","#书籍","#博客","#古早","#哲思","#多媒体","#情绪","#技术","#故事","#教程","#欢乐","#游戏","#社区","#神秘","#科学","#艺术","#谜题","#资源","#高能预警"];
     const PAGES = [
     {
-        "name": "我有个桶",
-        "desc": "对，我有个桶。",
+        "name": "爱思想",
+        "desc": "一个相当专业的人文社科学术平台，可以阅读到很多好文章。",
         "img": "auto",
-        "url": "https://ihasabucket.com/",
+        "url": "https://www.aisixiang.com/",
         "tags": [
-            "#？",
+            "#哲思",
+            "#社区",
+            "#科学"
+        ]
+    },
+    {
+        "name": "无用的网站",
+        "desc": "收录了一些相当意义不明的网站，无聊的时候可以看看。（当然，还是有一些网站挺不错的）",
+        "img": "auto",
+        "url": "https://www.theuselessweb.online/zh",
+        "tags": [
+            "#资源",
             "#欢乐"
         ]
     },
     {
-        "name": "大型强子对撞机毁灭世界了吗？",
-        "desc": "笑点解析：没有。",
+        "name": "时空电台",
+        "desc": "“一个时空旅行电台，按年代和国家播放音乐，探索世界各地的文化旋律。”",
         "img": "auto",
-        "url": "https://hasthelargehadroncolliderdestroyedtheworldyet.com/",
+        "url": "https://app.radiooooo.com/",
         "tags": [
-            "#神秘",
-            "#？"
+            "#多媒体",
+            "#资源"
         ]
     },
     {
-        "name": "chrismckenzie",
-        "desc": "似乎是个人主页？",
+        "name": "无聊按钮",
+        "desc": "点击按钮可以随机传送到一个网站，目前收录了150多个链接。",
         "img": "auto",
-        "url": "https://chrismckenzie.com/",
+        "url": "https://www.boredbutton.com/",
         "tags": [
-            "#？",
-            "#个人站"
+            "#资源",
+            "#欢乐"
         ]
     },
     {
-        "name": "缓存的蒙娜丽莎",
-        "desc": "神秘音效播放器？",
+        "name": "总是以貌取人",
+        "desc": "收录了很多书名/封面很离谱的书籍，我们至今仍未知道作者是怎么想出来这些的。",
         "img": "auto",
-        "url": "https://cachemonet.com/",
+        "url": "https://alwaysjudgeabookbyitscover.com/",
         "tags": [
+            "#欢乐",
+            "#书籍"
+        ]
+    },
+    {
+        "name": "Creative Tech Guy",
+        "desc": "“感谢你访问我的网站，你会在那里找到我制作的视频游戏、工具和其他程序合集。”是一些小游戏，不过网络连接不太稳定。",
+        "img": "auto",
+        "url": "https://creativetechguy.com/",
+        "tags": [
+            "#个人站",
+            "#游戏"
+        ]
+    },
+    {
+        "name": "科伦拜恩遗址",
+        "desc": "“本网站讲述了那天发生的残酷事实。这是对埃里克·哈里斯和迪兰·克莱博尔德行为及其后果的事实审视。”",
+        "img": "auto",
+        "url": "http://www.acolumbinesite.com/",
+        "tags": [
+            "#故事",
+            "#不安"
+        ]
+    },
+    {
+        "name": "阳光高架桥",
+        "desc": "“1999年起加装6部报警电话并实施24小时巡逻，2003年成功阻止18起自杀企图……”",
+        "img": "auto",
+        "url": "https://www.skywaybridge.com/",
+        "tags": [
+            "#不安"
+        ]
+    },
+    {
+        "name": "毛绒乐园",
+        "desc": "似乎是一个arg网站，模拟了古早的儿童动画风格，据说内容全部都是实拍的……",
+        "img": "auto",
+        "url": "https://plushyplayground.org/",
+        "tags": [
+            "#不安",
             "#神秘",
-            "#媒体"
+            "#谜题",
+            "#故事"
+        ]
+    },
+    {
+        "name": "媒体鱼",
+        "desc": "“这是一款简短而超现实的游戏，讲述了数字考古学、失落感，以及那种在一个曾经的目的地慢慢崩溃的地方寻找的感觉。”",
+        "img": "auto",
+        "url": "https://www.mackerelmediafish.com/",
+        "tags": [
+            "#游戏",
+            "#艺术",
+            "#古早"
+        ]
+    },
+    {
+        "name": "【动画短片】只是一个小朋友在吃早餐的视频",
+        "desc": "不要看推荐！不要看推荐！不要看推荐！",
+        "img": "auto",
+        "url": "https://www.bilibili.com/video/BV15J411G7fX/?spm_id_from=333.1387.favlist.content.click",
+        "tags": [
+            "#不安",
+            "#神秘",
+            "#高能预警",
+            "#多媒体"
+        ]
+    },
+    {
+        "name": "系统空间",
+        "desc": "一个网站的遗址……请不要相信任何内容。",
+        "img": "auto",
+        "url": "https://systemspace.network/",
+        "tags": [
+            "#不安",
+            "#故事",
+            "#社区",
+            "#神秘"
+        ]
+    },
+    {
+        "name": "这啥",
+        "desc": "分享一些奇怪的设计，真的有人会用到吗www",
+        "img": "auto",
+        "url": "https://weirdorconfusing.com/",
+        "tags": [
+            "#欢乐"
+        ]
+    },
+    {
+        "name": "系统空间",
+        "desc": "",
+        "img": "auto",
+        "url": "https://systemspace.network/",
+        "tags": []
+    },
+    {
+        "name": "集体无意识",
+        "desc": "收录了一些由《梦日记》开启的梦境散步游戏，可以联机游玩。电脑体验更佳哦。",
+        "img": "auto",
+        "url": "https://ynoproject.net/",
+        "tags": [
+            "#游戏",
+            "#神秘",
+            "#情绪"
+        ]
+    },
+    {
+        "name": "他把命当“游戏”玩？把世界变成程序的奇怪男人。",
+        "desc": "Ulillillia的介绍视频。如果世界是一个游戏的话……",
+        "img": "auto",
+        "url": "https://www.bilibili.com/video/BV1d1tGz7E9E/?spm_id_from=333.1387.favlist.content.click&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
+        "tags": [
+            "#哲思",
+            "#故事"
+        ]
+    },
+    {
+        "name": "私会鲁斌",
+        "desc": "“静修一处平凡地，读罢诗书看落霞”，一个充满哲理与感悟的个人博客。",
+        "img": "auto",
+        "url": "https://www.lubin.cn/",
+        "tags": [
+            "#博客",
+            "#哲思"
         ]
     },
     {
@@ -244,118 +378,6 @@
         "url": "https://cat-bounce.com/",
         "tags": [
             "#欢乐"
-        ]
-    },
-    {
-        "name": "随机颜色",
-        "desc": "字面意思而已啦",
-        "img": "auto",
-        "url": "https://randomcolour.com/",
-        "tags": [
-            "#？"
-        ]
-    },
-    {
-        "name": "r33b",
-        "desc": "？",
-        "img": "auto",
-        "url": "https://r33b.net/",
-        "tags": [
-            "#神秘",
-            "#？"
-        ]
-    },
-    {
-        "name": "速食鸵鸟",
-        "desc": "只是一只鸵鸟而已啦",
-        "img": "auto",
-        "url": "https://instantostrich.com/",
-        "tags": [
-            "#神秘",
-            "#欢乐",
-            "#？"
-        ]
-    },
-    {
-        "name": "爷爷没穿衣服",
-        "desc": "？",
-        "img": "auto",
-        "url": "https://grandpanoclothes.com/",
-        "tags": [
-            "#神秘",
-            "#高能预警",
-            "#？"
-        ]
-    },
-    {
-        "name": "红绿蓝",
-        "desc": "点击按钮可以改变页面颜色，如果一直闪烁的话……",
-        "img": "auto",
-        "url": "https://www.rrrgggbbb.com/",
-        "tags": [
-            "#神秘",
-            "#欢乐",
-            "#？"
-        ]
-    },
-    {
-        "name": "move now think later",
-        "desc": "一盘自己在下的国际跳棋。",
-        "img": "auto",
-        "url": "https://www.movenowthinklater.com/",
-        "tags": [
-            "#？"
-        ]
-    },
-    {
-        "name": "坠落之间",
-        "desc": "视觉和音效的循环叠加，毫无意义却让人着迷的小实验。",
-        "img": "auto",
-        "url": "https://www.fallingfalling.com/",
-        "tags": [
-            "#艺术",
-            "#媒体"
-        ]
-    },
-    {
-        "name": "Bury Me With My Money",
-        "desc": "复古街机风格——页面只显示“bury me with my money”，怀旧又荒诞。",
-        "img": "auto",
-        "url": "https://burymewithmymoney.com/",
-        "tags": [
-            "#欢乐",
-            "#神秘",
-            "#？"
-        ]
-    },
-    {
-        "name": "The finger, deal with it.",
-        "desc": "鼠标悬停就会收到一个“竖中指”的页面——极简设计，满满恶趣味。(手机似乎无法正常查看)",
-        "img": "auto",
-        "url": "https://thatsthefinger.com/",
-        "tags": [
-            "#欢乐",
-            "#？"
-        ]
-    },
-    {
-        "name": "HOOOOO!",
-        "desc": "一个不断闪烁“HEEEEEEEY!”的网页——没什么实用性，却让人忍不住一直盯着看。",
-        "img": "auto",
-        "url": "https://heeeeeeeey.com/",
-        "tags": [
-            "#欢乐",
-            "#？"
-        ]
-    },
-    {
-        "name": "WindowSwap",
-        "desc": "随机“打开”世界各地陌生人的窗景短视频，把多样的风景和温暖的氛围带回家。",
-        "img": "auto",
-        "url": "https://www.window-swap.com/",
-        "tags": [
-            "#资源",
-            "#艺术"
         ]
     },
     {
@@ -377,16 +399,6 @@
             "#游戏",
             "#艺术",
             "#欢乐"
-        ]
-    },
-    {
-        "name": "只是鱼",
-        "desc": "“这里没有复杂的代码，真的只是一条鱼。”",
-        "img": "auto",
-        "url": "https://justafish.org/",
-        "tags": [
-            "#欢乐",
-            "#？"
         ]
     },
     {
@@ -431,7 +443,8 @@
         "tags": [
             "#博客",
             "#古早",
-            "#个人站"
+            "#个人站",
+            "#科学"
         ]
     },
     {
@@ -441,7 +454,7 @@
         "url": "http://www.labix.net/",
         "tags": [
             "#艺术",
-            "#媒体",
+            "#多媒体",
             "#博客",
             "#古早",
             "#个人站"
@@ -705,7 +718,7 @@
         "tags": [
             "#古早",
             "#欢乐",
-            "#媒体"
+            "#多媒体"
         ]
     },
     {
@@ -725,7 +738,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1k4miB4E6k/?vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#媒体",
+            "#多媒体",
             "#不安"
         ]
     },
@@ -749,7 +762,7 @@
             "#艺术",
             "#故事",
             "#哲思",
-            "#媒体",
+            "#多媒体",
             "#欢乐"
         ]
     },
@@ -759,7 +772,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1rTMJzZE45/?spm_id_from=333.1387.favlist.content.click&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#媒体",
+            "#多媒体",
             "#高能预警",
             "#艺术",
             "#不安",
@@ -784,7 +797,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1xZ4y1G7cw?spm_id_from=333.788.recommend_more_video.1&trackid=web_related_0.router-related-2479604-ptszh.1777175601596.74&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#媒体",
+            "#多媒体",
             "#艺术",
             "#高能预警",
             "#古早"
@@ -796,7 +809,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1hs41167FE/?spm_id_from=333.1387.favlist.content.click&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#媒体",
+            "#多媒体",
             "#艺术",
             "#高能预警",
             "#不安",
@@ -830,7 +843,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1SzTKzvEXi/?spm_id_from=333.1387.favlist.content.click&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#媒体",
+            "#多媒体",
             "#高能预警",
             "#艺术",
             "#神秘",
@@ -920,7 +933,7 @@
         "tags": [
             "#艺术",
             "#神秘",
-            "#媒体",
+            "#多媒体",
             "#故事",
             "#欢乐"
         ]
@@ -942,7 +955,7 @@
         "url": "https://baike.baidu.com/item/%E4%BC%81%E9%B9%85%E5%85%AC%E8%B7%AF/22664507",
         "tags": [
             "#故事",
-            "#媒体",
+            "#多媒体",
             "#书籍"
         ]
     },
@@ -1029,7 +1042,7 @@
         "img": "auto",
         "url": "https://music-theory.aizcutei.com/",
         "tags": [
-            "#媒体",
+            "#多媒体",
             "#教程"
         ]
     },
@@ -1040,7 +1053,7 @@
         "url": "https://www.bilibili.com/video/BV1u34y1Q7FL?spm_id_from=333.788.recommend_more_video.0&trackid=web_related_0.router-related-2479604-ptszh.1777168564656.300&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
             "#情绪",
-            "#媒体",
+            "#多媒体",
             "#艺术"
         ]
     },
@@ -1060,7 +1073,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1ERMJzdEMH?spm_id_from=333.788.recommend_more_video.1&trackid=web_related_0.router-related-2479604-5tzfh.1777168158974.63&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#媒体",
+            "#多媒体",
             "#艺术"
         ]
     },
@@ -1070,7 +1083,7 @@
         "img": "auto",
         "url": "https://www.bilibili.com/video/BV1NmZABcEBU/?spm_id_from=333.788.recommend_more_video.4&trackid=web_related_0.router-related-2479604-ptszh.1777167987167.900&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
-            "#媒体",
+            "#多媒体",
             "#艺术"
         ]
     },
@@ -1216,7 +1229,7 @@
         "url": "https://music.91q.com/",
         "tags": [
             "#古早",
-            "#媒体",
+            "#多媒体",
             "#技术"
         ]
     },
@@ -1272,7 +1285,7 @@
         "url": "http://slsknet.org",
         "tags": [
             "#古早",
-            "#媒体",
+            "#多媒体",
             "#技术"
         ]
     },
@@ -1339,7 +1352,7 @@
         "tags": [
             "#社区",
             "#书籍",
-            "#媒体",
+            "#多媒体",
             "#艺术"
         ]
     },
@@ -1436,7 +1449,7 @@
         "url": "https://www.bilibili.com/video/BV1QX4y1g7Wh?spm_id_from=333.788.recommend_more_video.2&trackid=web_related_0.router-related-2479604-ptszh.1777626532144.288&vd_source=c2d47236e0c7c99a479ec8a8f536d0a9",
         "tags": [
             "#哲思",
-            "#媒体",
+            "#多媒体",
             "#故事"
         ]
     },
@@ -1527,7 +1540,7 @@
         "img": "auto",
         "url": "https://24hoursofhappy.com/",
         "tags": [
-            "#媒体"
+            "#多媒体"
         ]
     },
     {
@@ -1647,17 +1660,6 @@
             "#故事",
             "#社区",
             "#情绪"
-        ]
-    },
-    {
-        "name": "626旅馆",
-        "desc": "这是一个实景拍摄的恐怖游戏，只能在晚上游玩……不清楚能不能访问，可以搜实况来看。",
-        "img": "auto",
-        "url": "http://www.hotel626.com/",
-        "tags": [
-            "#游戏",
-            "#不安",
-            "#高能预警"
         ]
     },
     {
