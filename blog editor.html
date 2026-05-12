@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>蜘蜘 - 博客编辑器</title>
+    <style>
+        :root {
+            --pure-white: #FFFFFF;
+            --pure-black: #000000;
+            --gray-95: #F2F2F2;
+            --gray-85: #D9D9D9;
+            --gray-65: #A6A6A6;
+            --font-mono: "Courier New", Courier, "Liberation Mono", "Consolas", "Noto Sans Mono", monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-mono);
+            background-color: var(--gray-95);
+            color: var(--pure-black);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: 40px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #top-bar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 42px;
+            background-color: var(--pure-white);
+            display: flex; align-items: center; padding: 0 16px; z-index: 100;
+            border-bottom: 2px solid var(--pure-black);
+        }
+        #top-bar .title { font-size: 22px; font-weight: bold; color: var(--pure-black); }
+        #main-container {
+            max-width: 700px;
+            margin: 64px auto 20px;
+            padding: 16px;
+            background-color: var(--pure-white);
+            border: 2px solid var(--pure-black);
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+            position: relative;
+        }
+        h1 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--pure-black);
+            padding-bottom: 8px;
+        }
+
+        #toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+            align-items: center;
+            border-bottom: 1px dashed var(--gray-65);
+            padding-bottom: 12px;
+        }
+        .tool-btn {
+            background: var(--pure-white);
+            border: 2px solid var(--pure-black);
+            color: var(--pure-black);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            white-space: nowrap;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+            min-height: 44px;
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tool-btn:active { background: var(--gray-85); }
+        .tool-btn.active {
+            background: var(--pure-black);
+            color: var(--pure-white);
+        }
+        .tool-sep {
+            width: 2px;
+            height: 24px;
+            background: var(--gray-65);
+            margin: 0 4px;
+        }
+        #font-size-select {
+            padding: 8px 4px;
+            font-family: var(--font-mono);
+            border: 2px solid var(--pure-black);
+            border-radius: 4px;
+            background: var(--pure-white);
+            cursor: pointer;
+            height: 44px;
+            min-width: 72px;
+        }
+
+        #title-input {
+            width: 100%;
+            font-family: var(--font-mono);
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 12px;
+            border: 2px solid var(--pure-black);
+            border-radius: 4px;
+            background: var(--pure-white);
+            margin-bottom: 12px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        #title-input:focus { background: var(--gray-95); }
+
+        #editor-area { position: relative; min-height: 300px; }
+        #editor {
+            width: 100%;
+            min-height: 320px;
+            border: 1px dashed var(--gray-65);
+            padding: 12px;
+            outline: none;
+            font-family: var(--font-mono);
+            font-size: 15px;
+            line-height: 1.7;
+            background: var(--pure-white);
+            word-break: break-word;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        #editor hr {
+            border: 1px dashed var(--gray-65);
+            margin: 12px 0;
+            position: relative;
+        }
+        #editor hr::after {
+            content: ' — 分割线 — ';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--pure-white);
+            padding: 0 6px;
+            font-size: 12px;
+            color: var(--gray-65);
+        }
+        #editor pre {
+            background: var(--gray-95);
+            border: 1px solid var(--gray-65);
+            padding: 10px;
+            min-height: 2em;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        #editor blockquote {
+            border-left: 4px solid var(--pure-black);
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: var(--gray-95);
+            min-height: 2em;
+        }
+
+        #preview {
+            display: none;
+            width: 100%;
+            min-height: 320px;
+            padding: 12px;
+            font-size: 15px;
+            line-height: 1.7;
+            border: 1px solid var(--gray-65);
+            background: var(--pure-white);
+            word-break: break-word;
+        }
+        #preview .preview-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--pure-black);
+        }
+        #preview hr { border: none; border-top: 2px solid var(--pure-black); margin: 16px 0; }
+        #preview a { color: var(--pure-black); text-decoration: underline; }
+        #preview blockquote { border-left: 4px solid var(--pure-black); margin: 8px 0; padding: 8px 12px; background: var(--gray-95); }
+        #preview pre { background: var(--gray-95); border: 1px solid var(--gray-65); padding: 10px; overflow-x: auto; font-family: var(--font-mono); font-size: 14px; }
+
+        .mode-indicator { font-size: 13px; color: var(--gray-65); margin-bottom: 8px; }
+        #btn-export { margin-top: 12px; width: 100%; height: 44px; font-size: 16px; }
+
+        .fullscreen #main-container {
+            max-width: 100%; margin: 0; padding: 12px;
+            border: none; box-shadow: none;
+            position: fixed; top: 42px; left: 0; right: 0; bottom: 0; overflow-y: auto;
+        }
+        .fullscreen #editor { min-height: 50vh; }
+
+        @media (max-width: 500px) {
+            .tool-btn { font-size: 13px; padding: 6px 10px; min-height: 40px; min-width: 40px; }
+            #main-container { margin-left: 8px; margin-right: 8px; padding: 12px; }
+            #title-input { font-size: 17px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="top-bar">
+    <span class="title">蜘蜘</span>
+</div>
+
+<div id="main-container">
+    <h1>博客编辑器</h1>
+    <div id="toolbar">
+        <button class="tool-btn" id="btn-undo" title="撤销">↩</button>
+        <button class="tool-btn" id="btn-redo" title="重做">↪</button>
+        <span class="tool-sep"></span>
+        <button class="tool-btn format-btn" data-format="bold" title="加粗"><b>B</b></button>
+        <button class="tool-btn format-btn" data-format="italic" title="斜体"><i>I</i></button>
+        <button class="tool-btn format-btn" data-format="strike" title="删除线"><s>S</s></button>
+        <span class="tool-sep"></span>
+        <select id="font-size-select" title="字体大小">
+            <option value="1">12</option>
+            <option value="2">14</option>
+            <option value="3" selected>16</option>
+            <option value="4">20</option>
+            <option value="5">24</option>
+            <option value="6">28</option>
+            <option value="7">32</option>
+        </select>
+        <button class="tool-btn format-btn" data-format="ul" title="无序列表">•</button>
+        <button class="tool-btn format-btn" data-format="ol" title="有序列表">1.</button>
+        <button class="tool-btn format-btn" data-format="quote" title="引用">“</button>
+        <button class="tool-btn format-btn" data-format="code" title="代码">&lt;/&gt;</button>
+        <button class="tool-btn" id="btn-hr" title="分割线">—</button>
+        <button class="tool-btn" id="btn-link" title="链接">🔗</button>
+        <span class="tool-sep"></span>
+        <button class="tool-btn" id="btn-fullscreen" title="全屏编辑">📱</button>
+        <button class="tool-btn" id="btn-preview" title="预览">👁</button>
+    </div>
+
+    <input type="text" id="title-input" placeholder="输入博客标题..." />
+
+    <div class="mode-indicator" id="mode-indicator">编辑模式</div>
+
+    <div id="editor-area">
+        <div id="editor" contenteditable="true">
+            <p>在这里开始写你的博客……</p>
+            <p>点击键盘按钮会<strong>锁定格式</strong>，之后输入的文字自动应用该格式。<br>再次点击按钮可取消锁定。</p>
+            <hr>
+            <p>试试<strong>加粗</strong>、<em>斜体</em>、<s>删除线</s>，或者创建列表和引用。</p>
+        </div>
+        <div id="preview"></div>
+    </div>
+
+    <button class="tool-btn" id="btn-export" style="margin-top:12px;">💾 导出 HTML 文件</button>
+</div>
+
+<script>
+(function() {
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+    const titleInput = document.getElementById('title-input');
+    const btnPreview = document.getElementById('btn-preview');
+    const modeIndicator = document.getElementById('mode-indicator');
+    const fontSizeSelect = document.getElementById('font-size-select');
+    const btnHr = document.getElementById('btn-hr');
+    const btnLink = document.getElementById('btn-link');
+    const btnUndo = document.getElementById('btn-undo');
+    const btnRedo = document.getElementById('btn-redo');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    const btnExport = document.getElementById('btn-export');
+    const mainContainer = document.getElementById('main-container');
+    const formatBtns = document.querySelectorAll('.format-btn');
+
+    let isPreview = false;
+    let isFullscreen = false;
+
+    const activeFormats = {
+        bold: false,
+        italic: false,
+        strike: false,
+        ul: false,
+        ol: false,
+        quote: false,
+        code: false
+    };
+
+    // 根据当前选区同步 activeFormats（不破坏锁定逻辑，仅反映光标状态）
+    function syncFormatsFromSelection() {
+        if (isPreview || !editor.contains(document.activeElement)) return;
+
+        // 内联格式
+        activeFormats.bold = document.queryCommandState('bold');
+        activeFormats.italic = document.queryCommandState('italic');
+        activeFormats.strike = document.queryCommandState('strikeThrough');
+
+        // 列表
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0) {
+            let node = sel.getRangeAt(0).commonAncestorContainer;
+            while (node && node !== editor) {
+                if (node.nodeType === 1) {
+                    if (node.tagName === 'UL') {
+                        activeFormats.ul = true;
+                        activeFormats.ol = false;
+                        break;
+                    } else if (node.tagName === 'OL') {
+                        activeFormats.ol = true;
+                        activeFormats.ul = false;
+                        break;
+                    } else if (node.tagName === 'BLOCKQUOTE') {
+                        activeFormats.quote = true;
+                        activeFormats.code = false;
+                        break;
+                    } else if (node.tagName === 'PRE') {
+                        activeFormats.code = true;
+                        activeFormats.quote = false;
+                        break;
+                    }
+                }
+                node = node.parentElement;
+            }
+        }
+
+        // 如果不在任何块级格式中，确保这些状态为 false
+        if (!activeFormats.ul && !activeFormats.ol) {
+            activeFormats.ul = activeFormats.ol = false;
+        }
+        if (!activeFormats.quote) activeFormats.code = false;
+        if (!activeFormats.code) activeFormats.quote = false;
+
+        updateFormatButtons();
+    }
+
+    // 重置所有锁定（仅状态，不修改内容）
+    function clearAllFormats() {
+        for (let key in activeFormats) activeFormats[key] = false;
+        updateFormatButtons();
+    }
+
+    function toggleFormat(key) {
+        const blockKeys = ['ul', 'ol', 'quote', 'code'];
+        if (blockKeys.includes(key)) {
+            blockKeys.forEach(k => { if (k !== key) activeFormats[k] = false; });
+        }
+        activeFormats[key] = !activeFormats[key];
+        updateFormatButtons();
+        editor.focus();
+        applyCurrentFormat();
+    }
+
+    function updateFormatButtons() {
+        document.querySelectorAll('.format-btn').forEach(btn => {
+            const format = btn.dataset.format;
+            btn.classList.toggle('active', activeFormats[format] === true);
+        });
+    }
+
+    function applyCurrentFormat() {
+        function syncCommand(command, targetState) {
+            const state = document.queryCommandState(command);
+            if (state !== targetState) {
+                document.execCommand(command, false, null);
+            }
+        }
+        syncCommand('bold', activeFormats.bold);
+        syncCommand('italic', activeFormats.italic);
+        syncCommand('strikeThrough', activeFormats.strike);
+        syncCommand('insertUnorderedList', activeFormats.ul);
+        syncCommand('insertOrderedList', activeFormats.ol);
+
+        if (activeFormats.quote) {
+            document.execCommand('formatBlock', false, 'blockquote');
+        } else if (activeFormats.code) {
+            document.execCommand('formatBlock', false, 'pre');
+        } else {
+            const curBlock = getSelectionBlock();
+            if (curBlock && (curBlock.tagName === 'BLOCKQUOTE' || curBlock.tagName === 'PRE')) {
+                document.execCommand('formatBlock', false, 'p');
+            }
+        }
+    }
+
+    function getSelectionBlock() {
+        const sel = window.getSelection();
+        if (sel.rangeCount === 0) return null;
+        let node = sel.getRangeAt(0).commonAncestorContainer;
+        while (node && node !== editor) {
+            if (node.nodeType === 1 && ['BLOCKQUOTE','PRE','P','LI'].includes(node.tagName)) return node;
+            node = node.parentElement;
+        }
+        return null;
+    }
+
+    // 防止工具栏抢劫焦点
+    document.getElementById('toolbar').addEventListener('mousedown', function(e) {
+        if (e.target.closest('button') || e.target.closest('select')) {
+            e.preventDefault();
+        }
+    });
+
+    // 失焦时仅重置按钮（不清除格式）
+    editor.addEventListener('blur', function(e) {
+        if (e.relatedTarget && e.relatedTarget.closest('#toolbar')) return;
+        clearAllFormats();
+    });
+
+    // 聚焦或选区变化时，光标所在位置的格式会自动点亮对应按钮
+    editor.addEventListener('focus', syncFormatsFromSelection);
+    document.addEventListener('selectionchange', () => {
+        if (editor.contains(document.activeElement)) {
+            syncFormatsFromSelection();
+        }
+    });
+
+    formatBtns.forEach(btn => {
+        btn.addEventListener('click', () => toggleFormat(btn.dataset.format));
+    });
+
+    fontSizeSelect.addEventListener('change', () => {
+        editor.focus();
+        document.execCommand('fontSize', false, fontSizeSelect.value);
+    });
+
+    btnHr.addEventListener('click', () => {
+        editor.focus();
+        document.execCommand('insertHorizontalRule');
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0) {
+            const range = sel.getRangeAt(0);
+            range.collapse(false);
+            const newLine = document.createElement('p');
+            newLine.innerHTML = '<br>';
+            range.insertNode(newLine);
+            range.setStartAfter(newLine);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    });
+
+    btnLink.addEventListener('click', () => {
+        editor.focus();
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        const selectedText = range.toString().trim();
+        let url = prompt('请输入链接地址', 'https://');
+        if (url) {
+            if (!selectedText) {
+                let displayText = prompt('请输入链接显示文字', url) || url;
+                const textNode = document.createTextNode(displayText);
+                range.deleteContents();
+                range.insertNode(textNode);
+                range.selectNodeContents(textNode);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+            document.execCommand('createLink', false, url);
+        }
+    });
+
+    btnUndo.addEventListener('click', () => { editor.focus(); document.execCommand('undo'); });
+    btnRedo.addEventListener('click', () => { editor.focus(); document.execCommand('redo'); });
+
+    btnPreview.addEventListener('click', () => {
+        if (isPreview) {
+            editor.style.display = 'block';
+            preview.style.display = 'none';
+            titleInput.style.display = 'block';
+            btnPreview.textContent = '👁';
+            modeIndicator.textContent = '编辑模式';
+            isPreview = false;
+        } else {
+            const title = titleInput.value.trim() || '（无标题）';
+            preview.innerHTML = `<div class="preview-title">${title}</div>` + editor.innerHTML;
+            editor.style.display = 'none';
+            preview.style.display = 'block';
+            titleInput.style.display = 'none';
+            btnPreview.textContent = '✏️';
+            modeIndicator.textContent = '预览模式';
+            isPreview = true;
+        }
+    });
+
+    btnFullscreen.addEventListener('click', () => {
+        isFullscreen = !isFullscreen;
+        if (isFullscreen) {
+            mainContainer.classList.add('fullscreen');
+            btnFullscreen.textContent = '📱✓';
+        } else {
+            mainContainer.classList.remove('fullscreen');
+            btnFullscreen.textContent = '📱';
+        }
+    });
+
+    btnExport.addEventListener('click', () => {
+        const title = titleInput.value.trim() || '博客';
+        const body = editor.innerHTML;
+        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title></head><body>${body}</body></html>`;
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = title + '.html';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    titleInput.addEventListener('focus', clearAllFormats);
+
+    editor.addEventListener('click', e => {
+        if (e.target.tagName === 'A' && !isPreview) e.preventDefault();
+        // 点击后顺便同步一下按钮状态（因为光标可能移动）
+        syncFormatsFromSelection();
+    });
+
+    updateFormatButtons();
+})();
+</script>
+</body>
+</html>
