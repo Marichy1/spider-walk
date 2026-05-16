@@ -32,7 +32,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 顶部栏 — 硬朗黑框，跟 index 完全一致 */
         #top-bar {
             position: fixed;
             top: 0;
@@ -54,7 +53,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* 主容器 — 完全致敬 index 卡片风格 */
         #main-container {
             max-width: 700px;
             margin: 64px auto 40px;
@@ -65,7 +63,6 @@
             transition: all 0.1s ease;
         }
 
-        /* 文章主标题样式 (H1) 延续 index 的粗犷感 */
         h1 {
             font-size: 22px;
             margin-bottom: 20px;
@@ -74,7 +71,6 @@
             font-weight: bold;
         }
 
-        /* ---------- 工具栏 · 块级按钮都保留触感 ---------- */
         #toolbar {
             display: flex;
             flex-wrap: wrap;
@@ -124,7 +120,6 @@
             margin: 0 6px;
         }
 
-        /* 字体大小下拉框——硬朗边框 */
         #font-size-select {
             padding: 8px 8px;
             font-family: var(--font-mono);
@@ -143,7 +138,6 @@
             background: var(--gray-95);
         }
 
-        /* 标题输入框 干净锐利 */
         #title-input {
             width: 100%;
             font-family: var(--font-mono);
@@ -163,7 +157,6 @@
             border-color: var(--pure-black);
         }
 
-        /* 编辑区与预览区 —— 极简强对比 */
         #editor-area {
             position: relative;
             min-height: 340px;
@@ -196,7 +189,6 @@
             word-break: break-word;
         }
 
-        /* 编辑器内部富文本样式 — 继承 index 质朴美学 */
         #editor hr,
         #preview hr {
             border: none;
@@ -205,7 +197,6 @@
             position: relative;
         }
 
-        /* 分割线带装饰 — 保留编辑器巧思，但底色统一 */
         #editor hr::after {
             content: ' ✦ 分割线 ✦ ';
             position: absolute;
@@ -257,7 +248,6 @@
             opacity: 0.7;
         }
 
-        /* 预览区标题样式（动态生成） */
         #preview .preview-title {
             font-size: 24px;
             font-weight: bold;
@@ -267,7 +257,6 @@
             font-family: var(--font-mono);
         }
 
-        /* 模式指示器 */
         .mode-indicator {
             font-size: 12px;
             color: var(--gray-65);
@@ -278,9 +267,8 @@
             padding-left: 10px;
         }
 
-        /* 导出按钮宽展视觉 */
-        #btn-export {
-            margin-top: 20px;
+        #btn-export, #btn-upload-html {
+            margin-top: 12px;
             width: 100%;
             height: 48px;
             font-size: 16px;
@@ -289,12 +277,11 @@
             transition: 0.08s linear;
         }
 
-        #btn-export:active {
+        #btn-export:active, #btn-upload-html:active {
             background: var(--gray-85);
             transform: translate(1px, 1px);
         }
 
-        /* 全屏模式优化 (继承原逻辑，保持干净边缘) */
         .fullscreen #main-container {
             max-width: 100%;
             margin: 0;
@@ -314,7 +301,6 @@
             min-height: 55vh;
         }
 
-        /* 移动端舒适微调 */
         @media (max-width: 560px) {
             .tool-btn {
                 font-size: 13px;
@@ -339,12 +325,10 @@
             }
         }
 
-        /* 保持光标和交互的原生感 */
         #editor:focus {
             outline: none;
         }
 
-        /* 右击菜单保护 */
         #toolbar button, #toolbar select {
             touch-action: manipulation;
         }
@@ -409,6 +393,8 @@
         <div id="preview"></div>
     </div>
 
+    <!-- 上传按钮 + 导出按钮 -->
+    <button class="tool-btn" id="btn-upload-html">📂 上传 HTML 文件并编辑</button>
     <button class="tool-btn" id="btn-export">💾 导出 HTML 文件</button>
 </div>
 
@@ -426,6 +412,7 @@
         const btnRedo = document.getElementById('btn-redo');
         const btnFullscreen = document.getElementById('btn-fullscreen');
         const btnExport = document.getElementById('btn-export');
+        const btnUpload = document.getElementById('btn-upload-html');
         const mainContainer = document.getElementById('main-container');
         const formatBtns = document.querySelectorAll('.format-btn');
 
@@ -443,16 +430,14 @@
             code: false
         };
 
-        // 根据当前光标同步按钮高亮 (且不影响锁定状态)
+        // 根据当前光标同步按钮高亮
         function syncFormatsFromSelection() {
             if (isPreview || !editor.contains(document.activeElement)) return;
 
-            // 内联样式检测
             activeFormats.bold = document.queryCommandState('bold');
             activeFormats.italic = document.queryCommandState('italic');
             activeFormats.strike = document.queryCommandState('strikeThrough');
 
-            // 块级检测 (列表/引用/代码块)
             const sel = window.getSelection();
             if (sel.rangeCount > 0) {
                 let node = sel.getRangeAt(0).commonAncestorContainer;
@@ -467,36 +452,28 @@
                     }
                     temp = temp.parentElement;
                 }
-                // 互斥逻辑
                 activeFormats.ul = inUL;
                 activeFormats.ol = inOL;
                 activeFormats.quote = inBlockquote;
                 activeFormats.code = inPre;
-                // 避免同时激活ul+ol
                 if (activeFormats.ul && activeFormats.ol) activeFormats.ol = false;
                 if (activeFormats.quote && activeFormats.code) activeFormats.code = false;
             } else {
-                if (!activeFormats.ul && !activeFormats.ol) {
-                    activeFormats.ul = activeFormats.ol = false;
-                }
+                if (!activeFormats.ul && !activeFormats.ol) activeFormats.ul = activeFormats.ol = false;
                 if (!activeFormats.quote) activeFormats.code = false;
                 if (!activeFormats.code) activeFormats.quote = false;
             }
-
             updateFormatButtons();
         }
 
-        // 重置所有格式锁定 (不清除内容，只是按钮弹起)
         function clearAllFormats() {
             for (let key in activeFormats) activeFormats[key] = false;
             updateFormatButtons();
         }
 
-        // 核心切换锁定 (单击工具按钮时)
         function toggleFormat(key) {
             const blockKeys = ['ul', 'ol', 'quote', 'code'];
             if (blockKeys.includes(key)) {
-                // 块级格式互斥
                 blockKeys.forEach(k => { if (k !== key) activeFormats[k] = false; });
             }
             activeFormats[key] = !activeFormats[key];
@@ -505,7 +482,6 @@
             applyCurrentFormatLock();
         }
 
-        // 更新所有格式按钮的视觉 active 状态
         function updateFormatButtons() {
             formatBtns.forEach(btn => {
                 const fmt = btn.dataset.format;
@@ -515,9 +491,7 @@
             });
         }
 
-        // 将当前锁定的格式应用到选区/光标处 (无侵入执行 execCommand)
         function applyCurrentFormatLock() {
-            // 同步内联样式命令
             function setCmd(cmd, state) {
                 const curState = document.queryCommandState(cmd);
                 if (curState !== state) {
@@ -530,7 +504,6 @@
             setCmd('insertUnorderedList', activeFormats.ul);
             setCmd('insertOrderedList', activeFormats.ol);
 
-            // 处理引用与代码块的替换 (formatBlock)
             const currentBlock = getCurrentBlockElement();
             const needQuote = activeFormats.quote;
             const needCode = activeFormats.code;
@@ -548,14 +521,12 @@
                     document.execCommand('formatBlock', false, 'p');
                 }
             } else {
-                // 如果引用和代码都没锁定，但当前是blockquote或pre则退化为p
                 if (currentBlock && (currentBlock.tagName === 'BLOCKQUOTE' || currentBlock.tagName === 'PRE')) {
                     document.execCommand('formatBlock', false, 'p');
                 }
             }
         }
 
-        // 辅助：获取光标所在块级元素
         function getCurrentBlockElement() {
             const sel = window.getSelection();
             if (!sel.rangeCount) return null;
@@ -569,37 +540,17 @@
             return null;
         }
 
-        // 防止工具栏点击时编辑器失焦 + 避免弹起干扰
         document.getElementById('toolbar').addEventListener('mousedown', function(e) {
             if (e.target.closest('button') || e.target.closest('select')) {
                 e.preventDefault();
             }
         });
 
-        // 编辑器失焦时重置高亮（不清除实际锁定逻辑，仅让按钮视觉恢复，但下次聚焦会重新同步）
-        editor.addEventListener('blur', function(e) {
-            if (e.relatedTarget && e.relatedTarget.closest('#toolbar')) return;
-            // 失去焦点暂时清除高亮，但锁定值依然保存，再次聚焦时不会丢失锁定？为了体验，失焦时清高亮但保持锁定状态？
-            // 更好的体验: 失焦不清除内部状态, 只重置按钮样式避免误导。但我们干脆保留原格式状态锁不被移除，仅按钮刷新。
-            // 调整: 不清activeFormats，但update按钮会保留 active，但这里为了视觉干净，暂时让所有高亮消失?
-            // 但为了符合直觉: 失焦后格式锁定依旧有效，但除非点击工具栏否则不会误触。updateFormatButtons会维持原来的锁定样式。
-            // 不做额外清除，只重新同步一次避免残留显示
-            if (!editor.contains(document.activeElement)) {
-                // 略
-            }
-        });
-
-        editor.addEventListener('focus', () => {
-            syncFormatsFromSelection();
-        });
-
+        editor.addEventListener('focus', () => { syncFormatsFromSelection(); });
         document.addEventListener('selectionchange', () => {
-            if (editor.contains(document.activeElement)) {
-                syncFormatsFromSelection();
-            }
+            if (editor.contains(document.activeElement)) syncFormatsFromSelection();
         });
 
-        // 绑定格式按钮
         formatBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -607,15 +558,12 @@
             });
         });
 
-        // 字体大小
         fontSizeSelect.addEventListener('change', () => {
             editor.focus();
             document.execCommand('fontSize', false, fontSizeSelect.value);
-            // 确保焦点后按钮同步
             syncFormatsFromSelection();
         });
 
-        // 分割线
         btnHr.addEventListener('click', () => {
             editor.focus();
             document.execCommand('insertHorizontalRule');
@@ -634,7 +582,6 @@
             syncFormatsFromSelection();
         });
 
-        // 插入链接 保持复古风味
         btnLink.addEventListener('click', () => {
             editor.focus();
             const selection = window.getSelection();
@@ -657,11 +604,9 @@
             syncFormatsFromSelection();
         });
 
-        // 撤销 / 重做
         btnUndo.addEventListener('click', () => { editor.focus(); document.execCommand('undo'); syncFormatsFromSelection(); });
         btnRedo.addEventListener('click', () => { editor.focus(); document.execCommand('redo'); syncFormatsFromSelection(); });
 
-        // 预览模式切换 (风格一致)
         btnPreview.addEventListener('click', () => {
             if (isPreview) {
                 editor.style.display = 'block';
@@ -682,7 +627,6 @@
             }
         });
 
-        // 全屏模式
         btnFullscreen.addEventListener('click', () => {
             isFullscreen = !isFullscreen;
             if (isFullscreen) {
@@ -694,21 +638,18 @@
             }
         });
 
-        // ======================= 导出 HTML：完全复刻 index 风格，无页脚文字 =======================
+        // ---------- 导出 HTML：完全复刻 index 风格，无额外页脚，且标题不包含“蜘蜘手札” ----------
         function buildIndexStyleBlog() {
-            const blogTitleRaw = titleInput.value.trim() || '蜘蜘博客';
+            const blogTitleRaw = titleInput.value.trim() || '无标题';
             const blogTitle = escapeHtml(blogTitleRaw);
             const blogContent = editor.innerHTML;
-
-            // 完全复刻 index.html 风格，移除了 footer 区域
             return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${blogTitle} · 蜘蜘手札</title>
+    <title>${blogTitle}</title>
     <style>
-        /* 完全复刻 index.html 风格 —— 黑白色系 粗粝复古 */
         :root {
             --pure-white: #FFFFFF;
             --pure-black: #000000;
@@ -741,7 +682,6 @@
             border: 2px solid var(--pure-black);
             box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
         }
-        /* 文章头部模仿 index 的 h1 标题风格 */
         .blog-header h1 {
             font-size: 24px;
             margin-bottom: 20px;
@@ -749,7 +689,6 @@
             padding-bottom: 8px;
             font-weight: bold;
         }
-        /* 正文样式继承经典 */
         .blog-body {
             font-size: 15px;
             line-height: 1.7;
@@ -786,10 +725,6 @@
         .blog-body p {
             margin: 0.8em 0;
         }
-        .blog-body img {
-            max-width: 100%;
-            border: 1px solid var(--pure-black);
-        }
         @media (max-width: 560px) {
             #content { margin: 60px 16px 30px; padding: 18px; }
             #top-bar .title { font-size: 22px; }
@@ -818,14 +753,133 @@
             const blob = new Blob([fullHtml], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            const titleForFile = (titleInput.value.trim() || '蜘蜘博客').replace(/[\\/:*?"<>|]/g, '');
+            const titleForFile = (titleInput.value.trim() || '无标题').replace(/[\\/:*?"<>|]/g, '');
             a.download = `${titleForFile}.html`;
             a.href = url;
             a.click();
             URL.revokeObjectURL(url);
         });
 
-        // 辅助防止XSS
+        // ---------- 上传 HTML 并解析，填充至编辑器 ----------
+        function extractTitleAndBodyFromHtml(htmlString, fallbackFilename) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlString, 'text/html');
+            
+            // 1. 提取标题: 优先 <title>，其次 <h1>，最后使用文件名
+            let pageTitle = '';
+            const titleTag = doc.querySelector('title');
+            if (titleTag && titleTag.textContent.trim()) {
+                pageTitle = titleTag.textContent.trim();
+            } else {
+                const firstH1 = doc.querySelector('h1');
+                if (firstH1) pageTitle = firstH1.textContent.trim();
+                else pageTitle = fallbackFilename.replace(/\.html?$/i, '') || '上传的页面';
+            }
+            
+            // 2. 提取正文内容: 优先匹配标准蜘蜘导出格式 / 常见文章容器
+            let contentHtml = '';
+            // 优先找 #content .blog-body (蜘蜘导出风格)
+            const spiderBody = doc.querySelector('#content .blog-body');
+            if (spiderBody) {
+                contentHtml = spiderBody.innerHTML;
+            } else {
+                // 尝试 #content 主体
+                const contentDiv = doc.querySelector('#content');
+                if (contentDiv) {
+                    // 移除其中的 .blog-header 避免重复标题
+                    const cloneContent = contentDiv.cloneNode(true);
+                    const headerInside = cloneContent.querySelector('.blog-header');
+                    if (headerInside) headerInside.remove();
+                    contentHtml = cloneContent.innerHTML;
+                } else {
+                    // 通用文章区域: article, main, .post-body, .entry-content
+                    let mainArea = doc.querySelector('article, main, .post-body, .entry-content, .blog-body');
+                    if (mainArea) {
+                        contentHtml = mainArea.innerHTML;
+                    } else {
+                        // 最终回退: 取 body 内容，但过滤掉 nav/header/footer/script/style
+                        const body = doc.body;
+                        if (body) {
+                            const container = doc.createElement('div');
+                            for (let node of body.childNodes) {
+                                if (node.nodeType === Node.ELEMENT_NODE) {
+                                    const tag = node.tagName.toLowerCase();
+                                    if (['script', 'style', 'nav', 'header', 'footer', 'aside'].includes(tag)) continue;
+                                    if (node.id === 'top-bar') continue;  // 蜘蜘导航栏跳过
+                                    container.appendChild(node.cloneNode(true));
+                                } else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                                    container.appendChild(node.cloneNode(true));
+                                }
+                            }
+                            contentHtml = container.innerHTML;
+                        } else {
+                            contentHtml = '<p>无法解析页面主体内容，请手动编辑。</p>';
+                        }
+                    }
+                }
+            }
+            
+            // 清理可能残留的脚本、内联事件
+            const sanitized = sanitizeHtmlFragment(contentHtml);
+            return { title: pageTitle, body: sanitized };
+        }
+        
+        function sanitizeHtmlFragment(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            const scripts = div.querySelectorAll('script, iframe, object, embed, form');
+            scripts.forEach(el => el.remove());
+            const allElements = div.querySelectorAll('*');
+            allElements.forEach(el => {
+                for (let attr of el.attributes) {
+                    if (attr.name.startsWith('on')) {
+                        el.removeAttribute(attr.name);
+                    }
+                    if (attr.name === 'href' && attr.value.trim().toLowerCase().startsWith('javascript:')) {
+                        el.removeAttribute('href');
+                    }
+                }
+            });
+            return div.innerHTML;
+        }
+        
+        function uploadAndEdit() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html,.htm';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const htmlContent = ev.target.result;
+                        const { title, body } = extractTitleAndBodyFromHtml(htmlContent, file.name);
+                        // 填入编辑器
+                        titleInput.value = title;
+                        editor.innerHTML = body || '<p>上传的内容为空。</p>';
+                        if (isPreview) {
+                            btnPreview.click();
+                        }
+                        clearAllFormats();
+                        modeIndicator.textContent = '✓ 已载入页面 · 现在可以编辑了';
+                        setTimeout(() => {
+                            if (!isPreview) modeIndicator.textContent = '✎ 编辑模式 · 点击格式按钮即锁定格式';
+                        }, 2000);
+                        editor.focus();
+                        syncFormatsFromSelection();
+                    } catch (err) {
+                        alert('解析文件出错：' + err.message);
+                    }
+                };
+                reader.onerror = () => alert('文件读取失败');
+                reader.readAsText(file, 'UTF-8');
+            };
+            input.click();
+        }
+        
+        btnUpload.addEventListener('click', uploadAndEdit);
+        
         function escapeHtml(str) {
             return str.replace(/[&<>]/g, function(m) {
                 if (m === '&') return '&amp;';
@@ -836,18 +890,13 @@
                 return c;
             });
         }
-
-        // 标题聚焦时清除锁定高亮，但不影响之前的格式锁定（防止误触样式）
-        titleInput.addEventListener('focus', () => {
-            clearAllFormats();
-        });
-
+        
+        titleInput.addEventListener('focus', () => { clearAllFormats(); });
         editor.addEventListener('click', (e) => {
             if (e.target.tagName === 'A' && !isPreview) e.preventDefault();
             syncFormatsFromSelection();
         });
-
-        // 初始化按钮状态
+        
         syncFormatsFromSelection();
         editor.focus();
     })();
