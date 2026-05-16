@@ -3,8 +3,712 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>蜘蜘 - 博客编辑器</title>
+    <title>蜘蜘 · 博客编辑器</title>
     <style>
+        /* ========== 全局风格 —— 完全继承 INDEX 的冷酷复古感 ========== */
+        :root {
+            --pure-white: #FFFFFF;
+            --pure-black: #000000;
+            --gray-95: #F2F2F2;
+            --gray-85: #D9D9D9;
+            --gray-65: #A6A6A6;
+            --font-mono: "Courier New", Courier, "Liberation Mono", "Consolas", "Noto Sans Mono", monospace;
+            --shadow-heavy: 8px 8px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background-color: var(--gray-95);
+            color: var(--pure-black);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: 40px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 顶部栏 — 硬朗黑框，跟 index 完全一致 */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 42px;
+            background-color: var(--pure-white);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 100;
+            border-bottom: 2px solid var(--pure-black);
+        }
+
+        #top-bar .title {
+            font-size: 26px;
+            font-weight: bold;
+            color: var(--pure-black);
+            letter-spacing: 0.5px;
+        }
+
+        /* 主容器 — 完全致敬 index 卡片风格 */
+        #main-container {
+            max-width: 700px;
+            margin: 64px auto 40px;
+            padding: 20px;
+            background-color: var(--pure-white);
+            border: 2px solid var(--pure-black);
+            box-shadow: var(--shadow-heavy);
+            transition: all 0.1s ease;
+        }
+
+        /* 文章主标题样式 (H1) 延续 index 的粗犷感 */
+        h1 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--pure-black);
+            padding-bottom: 8px;
+            font-weight: bold;
+        }
+
+        /* ---------- 工具栏 · 块级按钮都保留触感 ---------- */
+        #toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            align-items: center;
+            border-bottom: 1px dashed var(--gray-65);
+            padding-bottom: 16px;
+        }
+
+        .tool-btn {
+            background: var(--pure-white);
+            border: 2px solid var(--pure-black);
+            color: var(--pure-black);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            padding: 8px 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            white-space: nowrap;
+            touch-action: manipulation;
+            user-select: none;
+            min-height: 44px;
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            transition: 0.05s linear;
+        }
+
+        .tool-btn:active {
+            background: var(--gray-85);
+            transform: translate(1px, 1px);
+        }
+
+        .tool-btn.active {
+            background: var(--pure-black);
+            color: var(--pure-white);
+            border-color: var(--pure-black);
+        }
+
+        .tool-sep {
+            width: 2px;
+            height: 26px;
+            background: var(--gray-65);
+            margin: 0 6px;
+        }
+
+        /* 字体大小下拉框——硬朗边框 */
+        #font-size-select {
+            padding: 8px 8px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            border: 2px solid var(--pure-black);
+            border-radius: 4px;
+            background: var(--pure-white);
+            cursor: pointer;
+            height: 44px;
+            min-width: 75px;
+            font-weight: bold;
+        }
+
+        #font-size-select:focus {
+            outline: none;
+            background: var(--gray-95);
+        }
+
+        /* 标题输入框 干净锐利 */
+        #title-input {
+            width: 100%;
+            font-family: var(--font-mono);
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px 14px;
+            border: 2px solid var(--pure-black);
+            border-radius: 4px;
+            background: var(--pure-white);
+            margin-bottom: 20px;
+            outline: none;
+            transition: 0.1s;
+        }
+
+        #title-input:focus {
+            background: var(--gray-95);
+            border-color: var(--pure-black);
+        }
+
+        /* 编辑区与预览区 —— 极简强对比 */
+        #editor-area {
+            position: relative;
+            min-height: 340px;
+        }
+
+        #editor {
+            width: 100%;
+            min-height: 360px;
+            border: 1px dashed var(--gray-65);
+            padding: 16px;
+            outline: none;
+            font-family: var(--font-mono);
+            font-size: 15px;
+            line-height: 1.7;
+            background: var(--pure-white);
+            word-break: break-word;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #preview {
+            display: none;
+            width: 100%;
+            min-height: 360px;
+            padding: 16px;
+            font-size: 15px;
+            line-height: 1.7;
+            border: 1px solid var(--gray-85);
+            background: var(--pure-white);
+            word-break: break-word;
+        }
+
+        /* 编辑器内部富文本样式 — 继承 index 质朴美学 */
+        #editor hr,
+        #preview hr {
+            border: none;
+            border-top: 2px solid var(--pure-black);
+            margin: 20px 0;
+            position: relative;
+        }
+
+        /* 分割线带装饰 — 保留编辑器巧思，但底色统一 */
+        #editor hr::after {
+            content: ' ✦ 分割线 ✦ ';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--pure-white);
+            padding: 0 12px;
+            font-size: 12px;
+            color: var(--gray-65);
+            font-family: var(--font-mono);
+            letter-spacing: 1px;
+        }
+
+        #editor blockquote,
+        #preview blockquote {
+            border-left: 4px solid var(--pure-black);
+            margin: 12px 0;
+            padding: 10px 16px;
+            background: var(--gray-95);
+            font-style: normal;
+            color: var(--pure-black);
+        }
+
+        #editor pre,
+        #preview pre {
+            background: var(--gray-95);
+            border: 1px solid var(--gray-65);
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 13.5px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 12px 0;
+        }
+
+        #editor ul, #editor ol {
+            padding-left: 1.8rem;
+            margin: 8px 0;
+        }
+
+        #editor a, #preview a {
+            color: var(--pure-black);
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        #editor a:active, #preview a:active {
+            opacity: 0.7;
+        }
+
+        /* 预览区标题样式（动态生成） */
+        #preview .preview-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--pure-black);
+            font-family: var(--font-mono);
+        }
+
+        /* 模式指示器 */
+        .mode-indicator {
+            font-size: 12px;
+            color: var(--gray-65);
+            margin-bottom: 12px;
+            font-family: var(--font-mono);
+            letter-spacing: 0.3px;
+            border-left: 3px solid var(--pure-black);
+            padding-left: 10px;
+        }
+
+        /* 导出按钮宽展视觉 */
+        #btn-export {
+            margin-top: 20px;
+            width: 100%;
+            height: 48px;
+            font-size: 16px;
+            font-weight: bold;
+            background: var(--pure-white);
+            transition: 0.08s linear;
+        }
+
+        #btn-export:active {
+            background: var(--gray-85);
+            transform: translate(1px, 1px);
+        }
+
+        /* 全屏模式优化 (继承原逻辑，保持干净边缘) */
+        .fullscreen #main-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 20px;
+            border: none;
+            box-shadow: none;
+            position: fixed;
+            top: 42px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            background: var(--pure-white);
+        }
+
+        .fullscreen #editor {
+            min-height: 55vh;
+        }
+
+        /* 移动端舒适微调 */
+        @media (max-width: 560px) {
+            .tool-btn {
+                font-size: 13px;
+                padding: 6px 10px;
+                min-height: 40px;
+                min-width: 40px;
+            }
+            #main-container {
+                margin-left: 12px;
+                margin-right: 12px;
+                padding: 18px;
+            }
+            #title-input {
+                font-size: 17px;
+                padding: 10px;
+            }
+            #top-bar .title {
+                font-size: 22px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+        }
+
+        /* 保持光标和交互的原生感 */
+        #editor:focus {
+            outline: none;
+        }
+
+        /* 右击菜单保护 */
+        #toolbar button, #toolbar select {
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body>
+
+<div id="top-bar">
+    <span class="title">蜘蜘</span>
+</div>
+
+<div id="main-container">
+    <h1>✎ 博客编辑器</h1>
+    <div id="toolbar">
+        <button class="tool-btn" id="btn-undo" title="撤销">↩ 撤销</button>
+        <button class="tool-btn" id="btn-redo" title="重做">↪ 重做</button>
+        <span class="tool-sep"></span>
+        <button class="tool-btn format-btn" data-format="bold" title="加粗"><b>B</b></button>
+        <button class="tool-btn format-btn" data-format="italic" title="斜体"><i>I</i></button>
+        <button class="tool-btn format-btn" data-format="strike" title="删除线"><s>S</s></button>
+        <span class="tool-sep"></span>
+        <select id="font-size-select" title="字体大小">
+            <option value="1">12px</option>
+            <option value="2">14px</option>
+            <option value="3" selected>16px</option>
+            <option value="4">20px</option>
+            <option value="5">24px</option>
+            <option value="6">28px</option>
+            <option value="7">32px</option>
+        </select>
+        <button class="tool-btn format-btn" data-format="ul" title="无序列表">• 列表</button>
+        <button class="tool-btn format-btn" data-format="ol" title="有序列表">1. 列表</button>
+        <button class="tool-btn format-btn" data-format="quote" title="引用">“ 引用</button>
+        <button class="tool-btn format-btn" data-format="code" title="代码">&lt;/&gt; 代码</button>
+        <button class="tool-btn" id="btn-hr" title="分割线">— 分割线</button>
+        <button class="tool-btn" id="btn-link" title="插入链接">🔗 链接</button>
+        <span class="tool-sep"></span>
+        <button class="tool-btn" id="btn-fullscreen" title="全屏模式">📱 全屏</button>
+        <button class="tool-btn" id="btn-preview" title="预览模式">👁 预览</button>
+    </div>
+
+    <input type="text" id="title-input" placeholder="输入博客标题…" value="比如：「蜘蜘漫游奇遇」" />
+
+    <div class="mode-indicator" id="mode-indicator">✎ 编辑模式 · 点击格式按钮即锁定格式</div>
+
+    <div id="editor-area">
+        <div id="editor" contenteditable="true">
+            <p>✦ 在这里开始书写你的篇章 ✦</p>
+            <p>点击工具栏的 <strong>B / I / S</strong> 会<strong style="background: #F2F2F2;">锁定格式</strong>，之后输入的文字会自动应用该样式。<br>再次点击按钮即可取消锁定，光标在哪格式就跟着哪。</p>
+            <hr>
+            <p>试试 <strong>加粗</strong>、<em>斜体</em>、<s>删除线</s>，或者创建有趣的无序列表：</p>
+            <ul>
+                <li>蜘蜘的冒险笔记</li>
+                <li>老派互联网角落</li>
+                <li>灰白复古美学</li>
+            </ul>
+            <p>也可以引用一段话：</p>
+            <blockquote>「蜘蜘从洞穴向外张望，每一次随机漫游都通往意想不到的站点。」</blockquote>
+            <p>甚至放进一段代码：</p>
+            <pre>console.log("hello, 蜘蜘风格编辑器");</pre>
+        </div>
+        <div id="preview"></div>
+    </div>
+
+    <button class="tool-btn" id="btn-export">💾 导出 HTML 文件</button>
+</div>
+
+<script>
+    (function() {
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const titleInput = document.getElementById('title-input');
+        const btnPreview = document.getElementById('btn-preview');
+        const modeIndicator = document.getElementById('mode-indicator');
+        const fontSizeSelect = document.getElementById('font-size-select');
+        const btnHr = document.getElementById('btn-hr');
+        const btnLink = document.getElementById('btn-link');
+        const btnUndo = document.getElementById('btn-undo');
+        const btnRedo = document.getElementById('btn-redo');
+        const btnFullscreen = document.getElementById('btn-fullscreen');
+        const btnExport = document.getElementById('btn-export');
+        const mainContainer = document.getElementById('main-container');
+        const formatBtns = document.querySelectorAll('.format-btn');
+
+        let isPreview = false;
+        let isFullscreen = false;
+
+        // 锁定格式状态池 (块级/内联)
+        const activeFormats = {
+            bold: false,
+            italic: false,
+            strike: false,
+            ul: false,
+            ol: false,
+            quote: false,
+            code: false
+        };
+
+        // 根据当前光标同步按钮高亮 (且不影响锁定状态)
+        function syncFormatsFromSelection() {
+            if (isPreview || !editor.contains(document.activeElement)) return;
+
+            // 内联样式检测
+            activeFormats.bold = document.queryCommandState('bold');
+            activeFormats.italic = document.queryCommandState('italic');
+            activeFormats.strike = document.queryCommandState('strikeThrough');
+
+            // 块级检测 (列表/引用/代码块)
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+                let node = sel.getRangeAt(0).commonAncestorContainer;
+                let inUL = false, inOL = false, inBlockquote = false, inPre = false;
+                let temp = node;
+                while (temp && temp !== editor) {
+                    if (temp.nodeType === 1) {
+                        if (temp.tagName === 'UL') inUL = true;
+                        if (temp.tagName === 'OL') inOL = true;
+                        if (temp.tagName === 'BLOCKQUOTE') inBlockquote = true;
+                        if (temp.tagName === 'PRE') inPre = true;
+                    }
+                    temp = temp.parentElement;
+                }
+                // 互斥逻辑
+                activeFormats.ul = inUL;
+                activeFormats.ol = inOL;
+                activeFormats.quote = inBlockquote;
+                activeFormats.code = inPre;
+                // 避免同时激活ul+ol
+                if (activeFormats.ul && activeFormats.ol) activeFormats.ol = false;
+                if (activeFormats.quote && activeFormats.code) activeFormats.code = false;
+            } else {
+                if (!activeFormats.ul && !activeFormats.ol) {
+                    activeFormats.ul = activeFormats.ol = false;
+                }
+                if (!activeFormats.quote) activeFormats.code = false;
+                if (!activeFormats.code) activeFormats.quote = false;
+            }
+
+            updateFormatButtons();
+        }
+
+        // 重置所有格式锁定 (不清除内容，只是按钮弹起)
+        function clearAllFormats() {
+            for (let key in activeFormats) activeFormats[key] = false;
+            updateFormatButtons();
+        }
+
+        // 核心切换锁定 (单击工具按钮时)
+        function toggleFormat(key) {
+            const blockKeys = ['ul', 'ol', 'quote', 'code'];
+            if (blockKeys.includes(key)) {
+                // 块级格式互斥
+                blockKeys.forEach(k => { if (k !== key) activeFormats[k] = false; });
+            }
+            activeFormats[key] = !activeFormats[key];
+            updateFormatButtons();
+            editor.focus();
+            applyCurrentFormatLock();
+        }
+
+        // 更新所有格式按钮的视觉 active 状态
+        function updateFormatButtons() {
+            formatBtns.forEach(btn => {
+                const fmt = btn.dataset.format;
+                if (fmt && activeFormats[fmt] !== undefined) {
+                    btn.classList.toggle('active', activeFormats[fmt] === true);
+                }
+            });
+        }
+
+        // 将当前锁定的格式应用到选区/光标处 (无侵入执行 execCommand)
+        function applyCurrentFormatLock() {
+            // 同步内联样式命令
+            function setCmd(cmd, state) {
+                const curState = document.queryCommandState(cmd);
+                if (curState !== state) {
+                    document.execCommand(cmd, false, null);
+                }
+            }
+            setCmd('bold', activeFormats.bold);
+            setCmd('italic', activeFormats.italic);
+            setCmd('strikeThrough', activeFormats.strike);
+            setCmd('insertUnorderedList', activeFormats.ul);
+            setCmd('insertOrderedList', activeFormats.ol);
+
+            // 处理引用与代码块的替换 (formatBlock)
+            const currentBlock = getCurrentBlockElement();
+            const needQuote = activeFormats.quote;
+            const needCode = activeFormats.code;
+
+            if (needQuote) {
+                if (currentBlock && currentBlock.tagName !== 'BLOCKQUOTE') {
+                    document.execCommand('formatBlock', false, 'blockquote');
+                } else if (!needQuote && currentBlock && currentBlock.tagName === 'BLOCKQUOTE') {
+                    document.execCommand('formatBlock', false, 'p');
+                }
+            } else if (needCode) {
+                if (currentBlock && currentBlock.tagName !== 'PRE') {
+                    document.execCommand('formatBlock', false, 'pre');
+                } else if (!needCode && currentBlock && currentBlock.tagName === 'PRE') {
+                    document.execCommand('formatBlock', false, 'p');
+                }
+            } else {
+                // 如果引用和代码都没锁定，但当前是blockquote或pre则退化为p
+                if (currentBlock && (currentBlock.tagName === 'BLOCKQUOTE' || currentBlock.tagName === 'PRE')) {
+                    document.execCommand('formatBlock', false, 'p');
+                }
+            }
+        }
+
+        // 辅助：获取光标所在块级元素
+        function getCurrentBlockElement() {
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return null;
+            let node = sel.getRangeAt(0).commonAncestorContainer;
+            while (node && node !== editor) {
+                if (node.nodeType === 1 && ['BLOCKQUOTE', 'PRE', 'P', 'LI', 'UL', 'OL'].includes(node.tagName)) {
+                    return node;
+                }
+                node = node.parentElement;
+            }
+            return null;
+        }
+
+        // 防止工具栏点击时编辑器失焦 + 避免弹起干扰
+        document.getElementById('toolbar').addEventListener('mousedown', function(e) {
+            if (e.target.closest('button') || e.target.closest('select')) {
+                e.preventDefault();
+            }
+        });
+
+        // 编辑器失焦时重置高亮（不清除实际锁定逻辑，仅让按钮视觉恢复，但下次聚焦会重新同步）
+        editor.addEventListener('blur', function(e) {
+            if (e.relatedTarget && e.relatedTarget.closest('#toolbar')) return;
+            // 失去焦点暂时清除高亮，但锁定值依然保存，再次聚焦时不会丢失锁定？为了体验，失焦时清高亮但保持锁定状态？
+            // 更好的体验: 失焦不清除内部状态, 只重置按钮样式避免误导。但我们干脆保留原格式状态锁不被移除，仅按钮刷新。
+            // 调整: 不清activeFormats，但update按钮会保留 active，但这里为了视觉干净，暂时让所有高亮消失?
+            // 但为了符合直觉: 失焦后格式锁定依旧有效，但除非点击工具栏否则不会误触。updateFormatButtons会维持原来的锁定样式。
+            // 不做额外清除，只重新同步一次避免残留显示
+            if (!editor.contains(document.activeElement)) {
+                // 略
+            }
+        });
+
+        editor.addEventListener('focus', () => {
+            syncFormatsFromSelection();
+        });
+
+        document.addEventListener('selectionchange', () => {
+            if (editor.contains(document.activeElement)) {
+                syncFormatsFromSelection();
+            }
+        });
+
+        // 绑定格式按钮
+        formatBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleFormat(btn.dataset.format);
+            });
+        });
+
+        // 字体大小
+        fontSizeSelect.addEventListener('change', () => {
+            editor.focus();
+            document.execCommand('fontSize', false, fontSizeSelect.value);
+            // 确保焦点后按钮同步
+            syncFormatsFromSelection();
+        });
+
+        // 分割线
+        btnHr.addEventListener('click', () => {
+            editor.focus();
+            document.execCommand('insertHorizontalRule');
+            const sel = window.getSelection();
+            if (sel.rangeCount) {
+                const range = sel.getRangeAt(0);
+                range.collapse(false);
+                const br = document.createElement('p');
+                br.innerHTML = '<br>';
+                range.insertNode(br);
+                range.setStartAfter(br);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+            syncFormatsFromSelection();
+        });
+
+        // 插入链接 保持复古风味
+        btnLink.addEventListener('click', () => {
+            editor.focus();
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+            const selectedText = range.toString().trim();
+            let url = prompt('请输入链接地址 (带上 http:// 或 https://)', 'https://');
+            if (url) {
+                if (!selectedText) {
+                    let displayText = prompt('链接显示文字', url) || url;
+                    const textNode = document.createTextNode(displayText);
+                    range.deleteContents();
+                    range.insertNode(textNode);
+                    range.selectNodeContents(textNode);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+                document.execCommand('createLink', false, url);
+            }
+            syncFormatsFromSelection();
+        });
+
+        // 撤销 / 重做
+        btnUndo.addEventListener('click', () => { editor.focus(); document.execCommand('undo'); syncFormatsFromSelection(); });
+        btnRedo.addEventListener('click', () => { editor.focus(); document.execCommand('redo'); syncFormatsFromSelection(); });
+
+        // 预览模式切换 (风格一致)
+        btnPreview.addEventListener('click', () => {
+            if (isPreview) {
+                editor.style.display = 'block';
+                preview.style.display = 'none';
+                titleInput.style.display = 'block';
+                btnPreview.textContent = '👁 预览';
+                modeIndicator.textContent = '✎ 编辑模式 · 点击格式按钮即锁定格式';
+                isPreview = false;
+            } else {
+                const title = titleInput.value.trim() || '无标题博客';
+                preview.innerHTML = `<div class="preview-title">${escapeHtml(title)}</div>` + editor.innerHTML;
+                editor.style.display = 'none';
+                preview.style.display = 'block';
+                titleInput.style.display = 'none';
+                btnPreview.textContent = '✏️ 编辑';
+                modeIndicator.textContent = '◆ 预览模式 · 所见即所得';
+                isPreview = true;
+            }
+        });
+
+        // 全屏模式
+        btnFullscreen.addEventListener('click', () => {
+            isFullscreen = !isFullscreen;
+            if (isFullscreen) {
+                mainContainer.classList.add('fullscreen');
+                btnFullscreen.textContent = '📱 退出全屏';
+            } else {
+                mainContainer.classList.remove('fullscreen');
+                btnFullscreen.textContent = '📱 全屏';
+            }
+        });
+
+        // ======================= 导出 HTML：完全复刻 index 风格，无页脚文字 =======================
+        function buildIndexStyleBlog() {
+            const blogTitleRaw = titleInput.value.trim() || '蜘蜘博客';
+            const blogTitle = escapeHtml(blogTitleRaw);
+            const blogContent = editor.innerHTML;
+
+            // 完全复刻 index.html 风格，移除了 footer 区域
+            return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${blogTitle} · 蜘蜘手札</title>
+    <style>
+        /* 完全复刻 index.html 风格 —— 黑白色系 粗粝复古 */
         :root {
             --pure-white: #FFFFFF;
             --pure-black: #000000;
@@ -21,499 +725,132 @@
             line-height: 1.6;
             min-height: 100vh;
             padding-bottom: 40px;
-            -webkit-tap-highlight-color: transparent;
         }
         #top-bar {
             position: fixed; top: 0; left: 0; width: 100%; height: 42px;
             background-color: var(--pure-white);
-            display: flex; align-items: center; padding: 0 16px; z-index: 100;
+            display: flex; align-items: center; padding: 0 20px; z-index: 100;
             border-bottom: 2px solid var(--pure-black);
         }
-        #top-bar .title { font-size: 22px; font-weight: bold; color: var(--pure-black); }
-        #main-container {
+        #top-bar .title { font-size: 26px; font-weight: bold; color: var(--pure-black); }
+        #content {
             max-width: 700px;
-            margin: 64px auto 20px;
-            padding: 16px;
+            margin: 64px auto 40px;
+            padding: 24px;
             background-color: var(--pure-white);
             border: 2px solid var(--pure-black);
             box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
-            position: relative;
         }
-        h1 {
-            font-size: 20px;
-            margin-bottom: 16px;
+        /* 文章头部模仿 index 的 h1 标题风格 */
+        .blog-header h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
             border-bottom: 2px solid var(--pure-black);
             padding-bottom: 8px;
-        }
-
-        #toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-            align-items: center;
-            border-bottom: 1px dashed var(--gray-65);
-            padding-bottom: 12px;
-        }
-        .tool-btn {
-            background: var(--pure-white);
-            border: 2px solid var(--pure-black);
-            color: var(--pure-black);
-            font-family: var(--font-mono);
-            font-size: 14px;
-            padding: 8px 12px;
-            cursor: pointer;
-            border-radius: 4px;
-            white-space: nowrap;
-            touch-action: manipulation;
-            -webkit-user-select: none;
-            user-select: none;
-            min-height: 44px;
-            min-width: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tool-btn:active { background: var(--gray-85); }
-        .tool-btn.active {
-            background: var(--pure-black);
-            color: var(--pure-white);
-        }
-        .tool-sep {
-            width: 2px;
-            height: 24px;
-            background: var(--gray-65);
-            margin: 0 4px;
-        }
-        #font-size-select {
-            padding: 8px 4px;
-            font-family: var(--font-mono);
-            border: 2px solid var(--pure-black);
-            border-radius: 4px;
-            background: var(--pure-white);
-            cursor: pointer;
-            height: 44px;
-            min-width: 72px;
-        }
-
-        #title-input {
-            width: 100%;
-            font-family: var(--font-mono);
-            font-size: 18px;
             font-weight: bold;
-            padding: 10px 12px;
-            border: 2px solid var(--pure-black);
-            border-radius: 4px;
-            background: var(--pure-white);
-            margin-bottom: 12px;
-            outline: none;
-            -webkit-appearance: none;
         }
-        #title-input:focus { background: var(--gray-95); }
-
-        #editor-area { position: relative; min-height: 300px; }
-        #editor {
-            width: 100%;
-            min-height: 320px;
-            border: 1px dashed var(--gray-65);
-            padding: 12px;
-            outline: none;
-            font-family: var(--font-mono);
+        /* 正文样式继承经典 */
+        .blog-body {
             font-size: 15px;
             line-height: 1.7;
-            background: var(--pure-white);
-            word-break: break-word;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
         }
-        #editor hr {
-            border: 1px dashed var(--gray-65);
+        .blog-body hr {
+            border: none;
+            border-top: 2px solid var(--pure-black);
+            margin: 24px 0;
+        }
+        .blog-body blockquote {
+            border-left: 4px solid var(--pure-black);
             margin: 12px 0;
-            position: relative;
+            padding: 10px 16px;
+            background: var(--gray-95);
         }
-        #editor hr::after {
-            content: ' — 分割线 — ';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--pure-white);
-            padding: 0 6px;
-            font-size: 12px;
-            color: var(--gray-65);
-        }
-        #editor pre {
+        .blog-body pre {
             background: var(--gray-95);
             border: 1px solid var(--gray-65);
-            padding: 10px;
-            min-height: 2em;
+            padding: 12px;
             font-family: var(--font-mono);
-            font-size: 14px;
+            font-size: 13px;
             white-space: pre-wrap;
             word-break: break-all;
+            margin: 12px 0;
         }
-        #editor blockquote {
-            border-left: 4px solid var(--pure-black);
+        .blog-body ul, .blog-body ol {
+            padding-left: 1.8rem;
             margin: 8px 0;
-            padding: 8px 12px;
-            background: var(--gray-95);
-            min-height: 2em;
         }
-
-        #preview {
-            display: none;
-            width: 100%;
-            min-height: 320px;
-            padding: 12px;
-            font-size: 15px;
-            line-height: 1.7;
-            border: 1px solid var(--gray-65);
-            background: var(--pure-white);
-            word-break: break-word;
+        .blog-body a {
+            color: var(--pure-black);
+            text-decoration: underline;
         }
-        #preview .preview-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--pure-black);
+        .blog-body p {
+            margin: 0.8em 0;
         }
-        #preview hr { border: none; border-top: 2px solid var(--pure-black); margin: 16px 0; }
-        #preview a { color: var(--pure-black); text-decoration: underline; }
-        #preview blockquote { border-left: 4px solid var(--pure-black); margin: 8px 0; padding: 8px 12px; background: var(--gray-95); }
-        #preview pre { background: var(--gray-95); border: 1px solid var(--gray-65); padding: 10px; overflow-x: auto; font-family: var(--font-mono); font-size: 14px; }
-
-        .mode-indicator { font-size: 13px; color: var(--gray-65); margin-bottom: 8px; }
-        #btn-export { margin-top: 12px; width: 100%; height: 44px; font-size: 16px; }
-
-        .fullscreen #main-container {
-            max-width: 100%; margin: 0; padding: 12px;
-            border: none; box-shadow: none;
-            position: fixed; top: 42px; left: 0; right: 0; bottom: 0; overflow-y: auto;
+        .blog-body img {
+            max-width: 100%;
+            border: 1px solid var(--pure-black);
         }
-        .fullscreen #editor { min-height: 50vh; }
-
-        @media (max-width: 500px) {
-            .tool-btn { font-size: 13px; padding: 6px 10px; min-height: 40px; min-width: 40px; }
-            #main-container { margin-left: 8px; margin-right: 8px; padding: 12px; }
-            #title-input { font-size: 17px; }
+        @media (max-width: 560px) {
+            #content { margin: 60px 16px 30px; padding: 18px; }
+            #top-bar .title { font-size: 22px; }
+            .blog-header h1 { font-size: 20px; }
         }
     </style>
 </head>
 <body>
-
 <div id="top-bar">
     <span class="title">蜘蜘</span>
 </div>
-
-<div id="main-container">
-    <h1>博客编辑器</h1>
-    <div id="toolbar">
-        <button class="tool-btn" id="btn-undo" title="撤销">↩</button>
-        <button class="tool-btn" id="btn-redo" title="重做">↪</button>
-        <span class="tool-sep"></span>
-        <button class="tool-btn format-btn" data-format="bold" title="加粗"><b>B</b></button>
-        <button class="tool-btn format-btn" data-format="italic" title="斜体"><i>I</i></button>
-        <button class="tool-btn format-btn" data-format="strike" title="删除线"><s>S</s></button>
-        <span class="tool-sep"></span>
-        <select id="font-size-select" title="字体大小">
-            <option value="1">12</option>
-            <option value="2">14</option>
-            <option value="3" selected>16</option>
-            <option value="4">20</option>
-            <option value="5">24</option>
-            <option value="6">28</option>
-            <option value="7">32</option>
-        </select>
-        <button class="tool-btn format-btn" data-format="ul" title="无序列表">•</button>
-        <button class="tool-btn format-btn" data-format="ol" title="有序列表">1.</button>
-        <button class="tool-btn format-btn" data-format="quote" title="引用">“</button>
-        <button class="tool-btn format-btn" data-format="code" title="代码">&lt;/&gt;</button>
-        <button class="tool-btn" id="btn-hr" title="分割线">—</button>
-        <button class="tool-btn" id="btn-link" title="链接">🔗</button>
-        <span class="tool-sep"></span>
-        <button class="tool-btn" id="btn-fullscreen" title="全屏编辑">📱</button>
-        <button class="tool-btn" id="btn-preview" title="预览">👁</button>
+<div id="content">
+    <div class="blog-header">
+        <h1>${blogTitle}</h1>
     </div>
-
-    <input type="text" id="title-input" placeholder="输入博客标题..." />
-
-    <div class="mode-indicator" id="mode-indicator">编辑模式</div>
-
-    <div id="editor-area">
-        <div id="editor" contenteditable="true">
-            <p>在这里开始写你的博客……</p>
-            <p>点击键盘按钮会<strong>锁定格式</strong>，之后输入的文字自动应用该格式。<br>再次点击按钮可取消锁定。</p>
-            <hr>
-            <p>试试<strong>加粗</strong>、<em>斜体</em>、<s>删除线</s>，或者创建列表和引用。</p>
-        </div>
-        <div id="preview"></div>
+    <div class="blog-body">
+        ${blogContent}
     </div>
-
-    <button class="tool-btn" id="btn-export" style="margin-top:12px;">💾 导出 HTML 文件</button>
 </div>
-
-<script>
-(function() {
-    const editor = document.getElementById('editor');
-    const preview = document.getElementById('preview');
-    const titleInput = document.getElementById('title-input');
-    const btnPreview = document.getElementById('btn-preview');
-    const modeIndicator = document.getElementById('mode-indicator');
-    const fontSizeSelect = document.getElementById('font-size-select');
-    const btnHr = document.getElementById('btn-hr');
-    const btnLink = document.getElementById('btn-link');
-    const btnUndo = document.getElementById('btn-undo');
-    const btnRedo = document.getElementById('btn-redo');
-    const btnFullscreen = document.getElementById('btn-fullscreen');
-    const btnExport = document.getElementById('btn-export');
-    const mainContainer = document.getElementById('main-container');
-    const formatBtns = document.querySelectorAll('.format-btn');
-
-    let isPreview = false;
-    let isFullscreen = false;
-
-    const activeFormats = {
-        bold: false,
-        italic: false,
-        strike: false,
-        ul: false,
-        ol: false,
-        quote: false,
-        code: false
-    };
-
-    // 根据当前选区同步 activeFormats（不破坏锁定逻辑，仅反映光标状态）
-    function syncFormatsFromSelection() {
-        if (isPreview || !editor.contains(document.activeElement)) return;
-
-        // 内联格式
-        activeFormats.bold = document.queryCommandState('bold');
-        activeFormats.italic = document.queryCommandState('italic');
-        activeFormats.strike = document.queryCommandState('strikeThrough');
-
-        // 列表
-        const sel = window.getSelection();
-        if (sel.rangeCount > 0) {
-            let node = sel.getRangeAt(0).commonAncestorContainer;
-            while (node && node !== editor) {
-                if (node.nodeType === 1) {
-                    if (node.tagName === 'UL') {
-                        activeFormats.ul = true;
-                        activeFormats.ol = false;
-                        break;
-                    } else if (node.tagName === 'OL') {
-                        activeFormats.ol = true;
-                        activeFormats.ul = false;
-                        break;
-                    } else if (node.tagName === 'BLOCKQUOTE') {
-                        activeFormats.quote = true;
-                        activeFormats.code = false;
-                        break;
-                    } else if (node.tagName === 'PRE') {
-                        activeFormats.code = true;
-                        activeFormats.quote = false;
-                        break;
-                    }
-                }
-                node = node.parentElement;
-            }
+</body>
+</html>`;
         }
 
-        // 如果不在任何块级格式中，确保这些状态为 false
-        if (!activeFormats.ul && !activeFormats.ol) {
-            activeFormats.ul = activeFormats.ol = false;
-        }
-        if (!activeFormats.quote) activeFormats.code = false;
-        if (!activeFormats.code) activeFormats.quote = false;
-
-        updateFormatButtons();
-    }
-
-    // 重置所有锁定（仅状态，不修改内容）
-    function clearAllFormats() {
-        for (let key in activeFormats) activeFormats[key] = false;
-        updateFormatButtons();
-    }
-
-    function toggleFormat(key) {
-        const blockKeys = ['ul', 'ol', 'quote', 'code'];
-        if (blockKeys.includes(key)) {
-            blockKeys.forEach(k => { if (k !== key) activeFormats[k] = false; });
-        }
-        activeFormats[key] = !activeFormats[key];
-        updateFormatButtons();
-        editor.focus();
-        applyCurrentFormat();
-    }
-
-    function updateFormatButtons() {
-        document.querySelectorAll('.format-btn').forEach(btn => {
-            const format = btn.dataset.format;
-            btn.classList.toggle('active', activeFormats[format] === true);
+        btnExport.addEventListener('click', () => {
+            const fullHtml = buildIndexStyleBlog();
+            const blob = new Blob([fullHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const titleForFile = (titleInput.value.trim() || '蜘蜘博客').replace(/[\\/:*?"<>|]/g, '');
+            a.download = `${titleForFile}.html`;
+            a.href = url;
+            a.click();
+            URL.revokeObjectURL(url);
         });
-    }
 
-    function applyCurrentFormat() {
-        function syncCommand(command, targetState) {
-            const state = document.queryCommandState(command);
-            if (state !== targetState) {
-                document.execCommand(command, false, null);
-            }
+        // 辅助防止XSS
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
         }
-        syncCommand('bold', activeFormats.bold);
-        syncCommand('italic', activeFormats.italic);
-        syncCommand('strikeThrough', activeFormats.strike);
-        syncCommand('insertUnorderedList', activeFormats.ul);
-        syncCommand('insertOrderedList', activeFormats.ol);
 
-        if (activeFormats.quote) {
-            document.execCommand('formatBlock', false, 'blockquote');
-        } else if (activeFormats.code) {
-            document.execCommand('formatBlock', false, 'pre');
-        } else {
-            const curBlock = getSelectionBlock();
-            if (curBlock && (curBlock.tagName === 'BLOCKQUOTE' || curBlock.tagName === 'PRE')) {
-                document.execCommand('formatBlock', false, 'p');
-            }
-        }
-    }
+        // 标题聚焦时清除锁定高亮，但不影响之前的格式锁定（防止误触样式）
+        titleInput.addEventListener('focus', () => {
+            clearAllFormats();
+        });
 
-    function getSelectionBlock() {
-        const sel = window.getSelection();
-        if (sel.rangeCount === 0) return null;
-        let node = sel.getRangeAt(0).commonAncestorContainer;
-        while (node && node !== editor) {
-            if (node.nodeType === 1 && ['BLOCKQUOTE','PRE','P','LI'].includes(node.tagName)) return node;
-            node = node.parentElement;
-        }
-        return null;
-    }
-
-    // 防止工具栏抢劫焦点
-    document.getElementById('toolbar').addEventListener('mousedown', function(e) {
-        if (e.target.closest('button') || e.target.closest('select')) {
-            e.preventDefault();
-        }
-    });
-
-    // 失焦时仅重置按钮（不清除格式）
-    editor.addEventListener('blur', function(e) {
-        if (e.relatedTarget && e.relatedTarget.closest('#toolbar')) return;
-        clearAllFormats();
-    });
-
-    // 聚焦或选区变化时，光标所在位置的格式会自动点亮对应按钮
-    editor.addEventListener('focus', syncFormatsFromSelection);
-    document.addEventListener('selectionchange', () => {
-        if (editor.contains(document.activeElement)) {
+        editor.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && !isPreview) e.preventDefault();
             syncFormatsFromSelection();
-        }
-    });
+        });
 
-    formatBtns.forEach(btn => {
-        btn.addEventListener('click', () => toggleFormat(btn.dataset.format));
-    });
-
-    fontSizeSelect.addEventListener('change', () => {
-        editor.focus();
-        document.execCommand('fontSize', false, fontSizeSelect.value);
-    });
-
-    btnHr.addEventListener('click', () => {
-        editor.focus();
-        document.execCommand('insertHorizontalRule');
-        const sel = window.getSelection();
-        if (sel.rangeCount > 0) {
-            const range = sel.getRangeAt(0);
-            range.collapse(false);
-            const newLine = document.createElement('p');
-            newLine.innerHTML = '<br>';
-            range.insertNode(newLine);
-            range.setStartAfter(newLine);
-            range.collapse(true);
-            sel.removeAllRanges();
-            sel.addRange(range);
-        }
-    });
-
-    btnLink.addEventListener('click', () => {
-        editor.focus();
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        const selectedText = range.toString().trim();
-        let url = prompt('请输入链接地址', 'https://');
-        if (url) {
-            if (!selectedText) {
-                let displayText = prompt('请输入链接显示文字', url) || url;
-                const textNode = document.createTextNode(displayText);
-                range.deleteContents();
-                range.insertNode(textNode);
-                range.selectNodeContents(textNode);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            }
-            document.execCommand('createLink', false, url);
-        }
-    });
-
-    btnUndo.addEventListener('click', () => { editor.focus(); document.execCommand('undo'); });
-    btnRedo.addEventListener('click', () => { editor.focus(); document.execCommand('redo'); });
-
-    btnPreview.addEventListener('click', () => {
-        if (isPreview) {
-            editor.style.display = 'block';
-            preview.style.display = 'none';
-            titleInput.style.display = 'block';
-            btnPreview.textContent = '👁';
-            modeIndicator.textContent = '编辑模式';
-            isPreview = false;
-        } else {
-            const title = titleInput.value.trim() || '（无标题）';
-            preview.innerHTML = `<div class="preview-title">${title}</div>` + editor.innerHTML;
-            editor.style.display = 'none';
-            preview.style.display = 'block';
-            titleInput.style.display = 'none';
-            btnPreview.textContent = '✏️';
-            modeIndicator.textContent = '预览模式';
-            isPreview = true;
-        }
-    });
-
-    btnFullscreen.addEventListener('click', () => {
-        isFullscreen = !isFullscreen;
-        if (isFullscreen) {
-            mainContainer.classList.add('fullscreen');
-            btnFullscreen.textContent = '📱✓';
-        } else {
-            mainContainer.classList.remove('fullscreen');
-            btnFullscreen.textContent = '📱';
-        }
-    });
-
-    btnExport.addEventListener('click', () => {
-        const title = titleInput.value.trim() || '博客';
-        const body = editor.innerHTML;
-        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title></head><body>${body}</body></html>`;
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = title + '.html';
-        a.click();
-        URL.revokeObjectURL(url);
-    });
-
-    titleInput.addEventListener('focus', clearAllFormats);
-
-    editor.addEventListener('click', e => {
-        if (e.target.tagName === 'A' && !isPreview) e.preventDefault();
-        // 点击后顺便同步一下按钮状态（因为光标可能移动）
+        // 初始化按钮状态
         syncFormatsFromSelection();
-    });
-
-    updateFormatButtons();
-})();
+        editor.focus();
+    })();
 </script>
 </body>
 </html>
