@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>蜘蜘 · 博客编辑器</title>
     <style>
-        /* ========== 全局风格 —— 完全继承 INDEX 的冷酷复古感 ========== */
         :root {
             --pure-white: #FFFFFF;
             --pure-black: #000000;
@@ -120,22 +119,10 @@
             margin: 0 6px;
         }
 
-        #font-size-select {
-            padding: 8px 8px;
+        .fontsize-btn {
             font-family: var(--font-mono);
-            font-size: 14px;
-            border: 2px solid var(--pure-black);
-            border-radius: 4px;
-            background: var(--pure-white);
-            cursor: pointer;
-            height: 44px;
-            min-width: 75px;
             font-weight: bold;
-        }
-
-        #font-size-select:focus {
-            outline: none;
-            background: var(--gray-95);
+            min-width: 52px;
         }
 
         #title-input {
@@ -244,10 +231,6 @@
             font-weight: 500;
         }
 
-        #editor a:active, #preview a:active {
-            opacity: 0.7;
-        }
-
         #preview .preview-title {
             font-size: 24px;
             font-weight: bold;
@@ -308,6 +291,10 @@
                 min-height: 40px;
                 min-width: 40px;
             }
+            .fontsize-btn {
+                min-width: 44px;
+                padding: 6px 8px;
+            }
             #main-container {
                 margin-left: 12px;
                 margin-right: 12px;
@@ -350,15 +337,13 @@
         <button class="tool-btn format-btn" data-format="italic" title="斜体"><i>I</i></button>
         <button class="tool-btn format-btn" data-format="strike" title="删除线"><s>S</s></button>
         <span class="tool-sep"></span>
-        <select id="font-size-select" title="字体大小">
-            <option value="1">12px</option>
-            <option value="2">14px</option>
-            <option value="3" selected>16px</option>
-            <option value="4">20px</option>
-            <option value="5">24px</option>
-            <option value="6">28px</option>
-            <option value="7">32px</option>
-        </select>
+        <button class="tool-btn fontsize-btn" data-fontsize="12">12px</button>
+        <button class="tool-btn fontsize-btn" data-fontsize="14">14px</button>
+        <button class="tool-btn fontsize-btn" data-fontsize="16">16px</button>
+        <button class="tool-btn fontsize-btn" data-fontsize="18">18px</button>
+        <button class="tool-btn fontsize-btn" data-fontsize="20">20px</button>
+        <button class="tool-btn fontsize-btn" data-fontsize="24">24px</button>
+        <span class="tool-sep"></span>
         <button class="tool-btn format-btn" data-format="ul" title="无序列表">• 列表</button>
         <button class="tool-btn format-btn" data-format="ol" title="有序列表">1. 列表</button>
         <button class="tool-btn format-btn" data-format="quote" title="引用">“ 引用</button>
@@ -372,12 +357,12 @@
 
     <input type="text" id="title-input" placeholder="输入博客标题…" value="比如：「蜘蜘漫游奇遇」" />
 
-    <div class="mode-indicator" id="mode-indicator">✎ 编辑模式 · 点击格式按钮即锁定格式</div>
+    <div class="mode-indicator" id="mode-indicator">✎ 编辑模式 · 点击格式按钮可锁定样式，后续输入自动叠加应用</div>
 
     <div id="editor-area">
         <div id="editor" contenteditable="true">
             <p>✦ 在这里开始书写你的篇章 ✦</p>
-            <p>点击工具栏的 <strong>B / I / S</strong> 会<strong style="background: #F2F2F2;">锁定格式</strong>，之后输入的文字会自动应用该样式。<br>再次点击按钮即可取消锁定，光标在哪格式就跟着哪。</p>
+            <p>点击工具栏的 <strong>B / I / S</strong> 或字号按钮会锁定格式，后续输入的文字会自动应用所有已锁定的样式。<br>选中已有文字后点击格式按钮，会立即应用并同时锁定该样式。</p>
             <hr>
             <p>试试 <strong>加粗</strong>、<em>斜体</em>、<s>删除线</s>，或者创建有趣的无序列表：</p>
             <ul>
@@ -389,11 +374,11 @@
             <blockquote>「蜘蜘从洞穴向外张望，每一次随机漫游都通往意想不到的站点。」</blockquote>
             <p>甚至放进一段代码：</p>
             <pre>console.log("hello, 蜘蜘风格编辑器");</pre>
+            <p><span style="background: #F2F2F2;">先锁字号，再锁加粗，输入的文字会同时拥有字号和加粗效果。</span></p>
         </div>
         <div id="preview"></div>
     </div>
 
-    <!-- 上传按钮 + 导出按钮 -->
     <button class="tool-btn" id="btn-upload-html">📂 上传 HTML 文件并编辑</button>
     <button class="tool-btn" id="btn-export">💾 导出 HTML 文件</button>
 </div>
@@ -405,7 +390,6 @@
         const titleInput = document.getElementById('title-input');
         const btnPreview = document.getElementById('btn-preview');
         const modeIndicator = document.getElementById('mode-indicator');
-        const fontSizeSelect = document.getElementById('font-size-select');
         const btnHr = document.getElementById('btn-hr');
         const btnLink = document.getElementById('btn-link');
         const btnUndo = document.getElementById('btn-undo');
@@ -415,11 +399,12 @@
         const btnUpload = document.getElementById('btn-upload-html');
         const mainContainer = document.getElementById('main-container');
         const formatBtns = document.querySelectorAll('.format-btn');
+        const fontsizeBtns = document.querySelectorAll('.fontsize-btn');
 
         let isPreview = false;
         let isFullscreen = false;
 
-        // 锁定格式状态池 (块级/内联)
+        // 内联格式锁定 (粗体、斜体、删除线)
         const activeFormats = {
             bold: false,
             italic: false,
@@ -430,47 +415,50 @@
             code: false
         };
 
-        // 根据当前光标同步按钮高亮
+        // 字号锁定（像素值，null表示未锁定）
+        let activeFontSize = null;
+
+        // 根据当前锁定状态生成内联样式字符串
+        function getInlineStyleFromLocks() {
+            const styles = [];
+            if (activeFontSize !== null) styles.push(`font-size:${activeFontSize}px`);
+            if (activeFormats.bold) styles.push('font-weight:bold');
+            if (activeFormats.italic) styles.push('font-style:italic');
+            if (activeFormats.strike) styles.push('text-decoration:line-through');
+            return styles.join(';');
+        }
+
+        // 同步内联/块级格式的高亮（仅用于按钮视觉反馈，不改变实际状态）
         function syncFormatsFromSelection() {
             if (isPreview || !editor.contains(document.activeElement)) return;
 
-            activeFormats.bold = document.queryCommandState('bold');
-            activeFormats.italic = document.queryCommandState('italic');
-            activeFormats.strike = document.queryCommandState('strikeThrough');
-
-            const sel = window.getSelection();
-            if (sel.rangeCount > 0) {
-                let node = sel.getRangeAt(0).commonAncestorContainer;
-                let inUL = false, inOL = false, inBlockquote = false, inPre = false;
-                let temp = node;
-                while (temp && temp !== editor) {
-                    if (temp.nodeType === 1) {
-                        if (temp.tagName === 'UL') inUL = true;
-                        if (temp.tagName === 'OL') inOL = true;
-                        if (temp.tagName === 'BLOCKQUOTE') inBlockquote = true;
-                        if (temp.tagName === 'PRE') inPre = true;
-                    }
-                    temp = temp.parentElement;
-                }
-                activeFormats.ul = inUL;
-                activeFormats.ol = inOL;
-                activeFormats.quote = inBlockquote;
-                activeFormats.code = inPre;
-                if (activeFormats.ul && activeFormats.ol) activeFormats.ol = false;
-                if (activeFormats.quote && activeFormats.code) activeFormats.code = false;
-            } else {
-                if (!activeFormats.ul && !activeFormats.ol) activeFormats.ul = activeFormats.ol = false;
-                if (!activeFormats.quote) activeFormats.code = false;
-                if (!activeFormats.code) activeFormats.quote = false;
-            }
+            // 检测内联命令状态（可能受锁定影响，但仅用于显示当前光标处的实际格式）
+            // 为了避免与锁定状态混淆，我们仅将按钮高亮反映锁定状态，而不是光标处实际状态
+            // 这样更符合锁定按钮的预期：点亮表示「将要应用的格式」
             updateFormatButtons();
+        }
+
+        function updateFormatButtons() {
+            formatBtns.forEach(btn => {
+                const fmt = btn.dataset.format;
+                if (fmt && activeFormats[fmt] !== undefined) {
+                    btn.classList.toggle('active', activeFormats[fmt] === true);
+                }
+            });
+            // 更新字号按钮高亮
+            fontsizeBtns.forEach(btn => {
+                const px = parseInt(btn.getAttribute('data-fontsize'), 10);
+                btn.classList.toggle('active', activeFontSize === px);
+            });
         }
 
         function clearAllFormats() {
             for (let key in activeFormats) activeFormats[key] = false;
+            activeFontSize = null;
             updateFormatButtons();
         }
 
+        // 切换内联/块级格式
         function toggleFormat(key) {
             const blockKeys = ['ul', 'ol', 'quote', 'code'];
             if (blockKeys.includes(key)) {
@@ -482,15 +470,7 @@
             applyCurrentFormatLock();
         }
 
-        function updateFormatButtons() {
-            formatBtns.forEach(btn => {
-                const fmt = btn.dataset.format;
-                if (fmt && activeFormats[fmt] !== undefined) {
-                    btn.classList.toggle('active', activeFormats[fmt] === true);
-                }
-            });
-        }
-
+        // 将当前锁定的块级格式应用到选区/光标处
         function applyCurrentFormatLock() {
             function setCmd(cmd, state) {
                 const curState = document.queryCommandState(cmd);
@@ -540,17 +520,93 @@
             return null;
         }
 
-        document.getElementById('toolbar').addEventListener('mousedown', function(e) {
-            if (e.target.closest('button') || e.target.closest('select')) {
-                e.preventDefault();
+        // 对当前选区包裹 span 并设置字体大小（保留原有内联样式）
+        function applyFontSizeToSelection(px) {
+            const sel = window.getSelection();
+            if (!sel.rangeCount || sel.isCollapsed) return false;
+            const range = sel.getRangeAt(0);
+            if (range.collapsed) return false;
+
+            try {
+                const content = range.extractContents();
+                const wrapper = document.createElement('span');
+                wrapper.style.fontSize = px + 'px';
+                wrapper.appendChild(content);
+                range.insertNode(wrapper);
+                // 将选区设置到 wrapper 内
+                sel.removeAllRanges();
+                const newRange = document.createRange();
+                newRange.selectNodeContents(wrapper);
+                sel.addRange(newRange);
+                return true;
+            } catch (e) {
+                console.warn('applyFontSizeToSelection failed', e);
+                return false;
+            }
+        }
+
+        // 切换字号锁定
+        function toggleFontSize(px) {
+            editor.focus();
+            const sel = window.getSelection();
+            const hasSelected = !sel.isCollapsed && sel.rangeCount > 0 && sel.getRangeAt(0).toString().trim().length > 0;
+            
+            if (hasSelected) {
+                // 对选中文字应用字号（保留原有其他格式）
+                const success = applyFontSizeToSelection(px);
+                if (success) {
+                    // 应用成功后，锁定状态变为该字号（覆盖之前的锁定）
+                    activeFontSize = px;
+                } else {
+                    // 如果应用失败（如跨块），只切换锁定状态，不改变已有文字
+                    if (activeFontSize === px) {
+                        activeFontSize = null;
+                    } else {
+                        activeFontSize = px;
+                    }
+                }
+            } else {
+                // 无选区时，单纯切换锁定状态
+                if (activeFontSize === px) {
+                    activeFontSize = null;
+                } else {
+                    activeFontSize = px;
+                }
+            }
+            updateFormatButtons();
+        }
+
+        // 输入拦截：根据锁定的内联样式生成带样式的文本插入
+        let isComposing = false;
+        editor.addEventListener('compositionstart', () => { isComposing = true; });
+        editor.addEventListener('compositionend', () => { isComposing = false; });
+
+        editor.addEventListener('beforeinput', (e) => {
+            if (isPreview) return;
+            // 只处理纯文本插入（用户直接输入字符）
+            if (e.inputType === 'insertText' && !isComposing) {
+                const style = getInlineStyleFromLocks();
+                if (style) {
+                    e.preventDefault();
+                    const text = e.data;
+                    if (text === null) return;
+                    const wrapped = `<span style="${style}">${escapeHtml(text)}</span>`;
+                    document.execCommand('insertHTML', false, wrapped);
+                }
+                // 如果没有任何内联格式锁定，则让默认行为执行（这时粗体等依靠 execCommand 的光标状态）
             }
         });
 
-        editor.addEventListener('focus', () => { syncFormatsFromSelection(); });
-        document.addEventListener('selectionchange', () => {
-            if (editor.contains(document.activeElement)) syncFormatsFromSelection();
-        });
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
 
+        // 绑定格式按钮
         formatBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -558,12 +614,26 @@
             });
         });
 
-        fontSizeSelect.addEventListener('change', () => {
-            editor.focus();
-            document.execCommand('fontSize', false, fontSizeSelect.value);
-            syncFormatsFromSelection();
+        // 绑定字号按钮
+        fontsizeBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const px = parseInt(btn.getAttribute('data-fontsize'), 10);
+                if (!isNaN(px)) toggleFontSize(px);
+            });
         });
 
+        // 防止工具栏抢焦点
+        document.getElementById('toolbar').addEventListener('mousedown', function(e) {
+            if (e.target.closest('button') || e.target.closest('select')) e.preventDefault();
+        });
+
+        // 聚焦时同步按钮状态（主要是为了显示正确的锁定状态）
+        editor.addEventListener('focus', () => { updateFormatButtons(); });
+        // 选区变化时，我们不需要改变锁定状态，但为了保持一致性，只更新按钮（如果用户移动光标到不同格式区域，不自动切换锁定）
+        // 但为了更好的体验，当光标移动到不同格式的文本上时，我们不应自动修改锁定状态，所以什么都不做
+
+        // 其他工具栏功能
         btnHr.addEventListener('click', () => {
             editor.focus();
             document.execCommand('insertHorizontalRule');
@@ -579,7 +649,7 @@
                 sel.removeAllRanges();
                 sel.addRange(range);
             }
-            syncFormatsFromSelection();
+            updateFormatButtons();
         });
 
         btnLink.addEventListener('click', () => {
@@ -601,11 +671,11 @@
                 }
                 document.execCommand('createLink', false, url);
             }
-            syncFormatsFromSelection();
+            updateFormatButtons();
         });
 
-        btnUndo.addEventListener('click', () => { editor.focus(); document.execCommand('undo'); syncFormatsFromSelection(); });
-        btnRedo.addEventListener('click', () => { editor.focus(); document.execCommand('redo'); syncFormatsFromSelection(); });
+        btnUndo.addEventListener('click', () => { editor.focus(); document.execCommand('undo'); updateFormatButtons(); });
+        btnRedo.addEventListener('click', () => { editor.focus(); document.execCommand('redo'); updateFormatButtons(); });
 
         btnPreview.addEventListener('click', () => {
             if (isPreview) {
@@ -613,11 +683,11 @@
                 preview.style.display = 'none';
                 titleInput.style.display = 'block';
                 btnPreview.textContent = '👁 预览';
-                modeIndicator.textContent = '✎ 编辑模式 · 点击格式按钮即锁定格式';
+                modeIndicator.textContent = '✎ 编辑模式 · 点击格式按钮可锁定样式，后续输入自动叠加应用';
                 isPreview = false;
             } else {
                 const title = titleInput.value.trim() || '无标题博客';
-                preview.innerHTML = `<div class="preview-title">${escapeHtml(title)}</div>` + editor.innerHTML;
+                preview.innerHTML = `<div class="preview-title">${escapeHtmlSimple(title)}</div>` + editor.innerHTML;
                 editor.style.display = 'none';
                 preview.style.display = 'block';
                 titleInput.style.display = 'none';
@@ -638,10 +708,10 @@
             }
         });
 
-        // ---------- 导出 HTML：完全复刻 index 风格，无额外页脚，且标题不包含“蜘蜘手札” ----------
+        // ---------- 导出 HTML（完全复刻 index 风格，无多余标记）----------
         function buildIndexStyleBlog() {
             const blogTitleRaw = titleInput.value.trim() || '无标题';
-            const blogTitle = escapeHtml(blogTitleRaw);
+            const blogTitle = escapeHtmlSimple(blogTitleRaw);
             const blogContent = editor.innerHTML;
             return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -760,12 +830,10 @@
             URL.revokeObjectURL(url);
         });
 
-        // ---------- 上传 HTML 并解析，填充至编辑器 ----------
+        // ---------- 上传 HTML 并解析 ----------
         function extractTitleAndBodyFromHtml(htmlString, fallbackFilename) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlString, 'text/html');
-            
-            // 1. 提取标题: 优先 <title>，其次 <h1>，最后使用文件名
             let pageTitle = '';
             const titleTag = doc.querySelector('title');
             if (titleTag && titleTag.textContent.trim()) {
@@ -775,29 +843,22 @@
                 if (firstH1) pageTitle = firstH1.textContent.trim();
                 else pageTitle = fallbackFilename.replace(/\.html?$/i, '') || '上传的页面';
             }
-            
-            // 2. 提取正文内容: 优先匹配标准蜘蜘导出格式 / 常见文章容器
             let contentHtml = '';
-            // 优先找 #content .blog-body (蜘蜘导出风格)
             const spiderBody = doc.querySelector('#content .blog-body');
             if (spiderBody) {
                 contentHtml = spiderBody.innerHTML;
             } else {
-                // 尝试 #content 主体
                 const contentDiv = doc.querySelector('#content');
                 if (contentDiv) {
-                    // 移除其中的 .blog-header 避免重复标题
                     const cloneContent = contentDiv.cloneNode(true);
                     const headerInside = cloneContent.querySelector('.blog-header');
                     if (headerInside) headerInside.remove();
                     contentHtml = cloneContent.innerHTML;
                 } else {
-                    // 通用文章区域: article, main, .post-body, .entry-content
                     let mainArea = doc.querySelector('article, main, .post-body, .entry-content, .blog-body');
                     if (mainArea) {
                         contentHtml = mainArea.innerHTML;
                     } else {
-                        // 最终回退: 取 body 内容，但过滤掉 nav/header/footer/script/style
                         const body = doc.body;
                         if (body) {
                             const container = doc.createElement('div');
@@ -805,7 +866,7 @@
                                 if (node.nodeType === Node.ELEMENT_NODE) {
                                     const tag = node.tagName.toLowerCase();
                                     if (['script', 'style', 'nav', 'header', 'footer', 'aside'].includes(tag)) continue;
-                                    if (node.id === 'top-bar') continue;  // 蜘蜘导航栏跳过
+                                    if (node.id === 'top-bar') continue;
                                     container.appendChild(node.cloneNode(true));
                                 } else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
                                     container.appendChild(node.cloneNode(true));
@@ -818,12 +879,10 @@
                     }
                 }
             }
-            
-            // 清理可能残留的脚本、内联事件
             const sanitized = sanitizeHtmlFragment(contentHtml);
             return { title: pageTitle, body: sanitized };
         }
-        
+
         function sanitizeHtmlFragment(html) {
             const div = document.createElement('div');
             div.innerHTML = html;
@@ -832,17 +891,13 @@
             const allElements = div.querySelectorAll('*');
             allElements.forEach(el => {
                 for (let attr of el.attributes) {
-                    if (attr.name.startsWith('on')) {
-                        el.removeAttribute(attr.name);
-                    }
-                    if (attr.name === 'href' && attr.value.trim().toLowerCase().startsWith('javascript:')) {
-                        el.removeAttribute('href');
-                    }
+                    if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
+                    if (attr.name === 'href' && attr.value.trim().toLowerCase().startsWith('javascript:')) el.removeAttribute('href');
                 }
             });
             return div.innerHTML;
         }
-        
+
         function uploadAndEdit() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -855,19 +910,16 @@
                     try {
                         const htmlContent = ev.target.result;
                         const { title, body } = extractTitleAndBodyFromHtml(htmlContent, file.name);
-                        // 填入编辑器
                         titleInput.value = title;
                         editor.innerHTML = body || '<p>上传的内容为空。</p>';
-                        if (isPreview) {
-                            btnPreview.click();
-                        }
+                        if (isPreview) btnPreview.click();
                         clearAllFormats();
                         modeIndicator.textContent = '✓ 已载入页面 · 现在可以编辑了';
                         setTimeout(() => {
-                            if (!isPreview) modeIndicator.textContent = '✎ 编辑模式 · 点击格式按钮即锁定格式';
+                            if (!isPreview) modeIndicator.textContent = '✎ 编辑模式 · 点击格式按钮可锁定样式，后续输入自动叠加应用';
                         }, 2000);
                         editor.focus();
-                        syncFormatsFromSelection();
+                        updateFormatButtons();
                     } catch (err) {
                         alert('解析文件出错：' + err.message);
                     }
@@ -877,27 +929,25 @@
             };
             input.click();
         }
-        
+
         btnUpload.addEventListener('click', uploadAndEdit);
-        
-        function escapeHtml(str) {
+
+        function escapeHtmlSimple(str) {
             return str.replace(/[&<>]/g, function(m) {
                 if (m === '&') return '&amp;';
                 if (m === '<') return '&lt;';
                 if (m === '>') return '&gt;';
                 return m;
-            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-                return c;
             });
         }
-        
+
         titleInput.addEventListener('focus', () => { clearAllFormats(); });
         editor.addEventListener('click', (e) => {
             if (e.target.tagName === 'A' && !isPreview) e.preventDefault();
-            syncFormatsFromSelection();
+            updateFormatButtons();
         });
-        
-        syncFormatsFromSelection();
+
+        updateFormatButtons();
         editor.focus();
     })();
 </script>
